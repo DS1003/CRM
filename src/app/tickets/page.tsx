@@ -252,44 +252,40 @@ export default function TicketsPage() {
                 </div>
             </div>
 
-            {/* 2026 Modern KPIs Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                <StatsCard title="Requêtes Actives" value={kpis.open.toString()} icon={AlertCircle} description="Volume transactionnel actuel" trend="up" change={5} />
-                <StatsCard title="SLA Compliance" value={`${kpis.slaCompliance}%`} icon={Clock} description="Engagement de niveau de service" trend="up" change={2} />
-                <StatsCard title="Escalades" value={kpis.escalated.toString()} icon={ShieldAlert} description="Alertes critiques prioritaires" trend="down" change={1} />
-                <StatsCard title="Cycle de Vie" value="98%" icon={CheckCircle2} description="Performance globale du flux" trend="up" change={0.5} />
+            {/* KPIs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatsCard title="Requêtes Actives" value={kpis.open.toString()} icon={AlertCircle} description="Flux en attente" trend="up" change={5} />
+                <StatsCard title="SLA Compliance" value={`${kpis.slaCompliance}%`} icon={Clock} description="Engagement de service" trend="up" change={2} />
+                <StatsCard title="Escalades" value={kpis.escalated.toString()} icon={ShieldAlert} description="Secteurs critiques" trend="down" change={1} />
+                <StatsCard title="Taux de Résol." value="98%" icon={CheckCircle2} description="Performance SAV" trend="up" change={0.5} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Ticket List */}
-                <Card className="lg:col-span-2 border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.02)] ring-1 ring-slate-100/60 rounded-[1.5rem] overflow-hidden">
-                    <CardHeader className="p-6 lg:p-10 border-b border-slate-50">
-                        <div className="flex flex-col xl:flex-row gap-6 justify-between items-start xl:items-center">
-                            <div className="flex bg-slate-50/80 p-1 rounded-xl ring-1 ring-slate-100/50 backdrop-blur-sm self-start">
-                                {["All", "Open", "Assigned", "In Progress", "Resolved"].map((s) => (
-                                    <button
-                                        key={s}
-                                        onClick={() => setFilterStatus(s)}
-                                        className={cn(
-                                            "px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300",
-                                            filterStatus === s
-                                                ? "bg-white text-slate-900 shadow-[0_2px_8px_rgba(0,0,0,0.04)] ring-1 ring-slate-200/20"
-                                                : "text-slate-400 hover:text-slate-600"
-                                        )}
-                                    >
-                                        {s === "All" ? "Tous" : s === "In Progress" ? "En Cours" : s}
-                                    </button>
-                                ))}
-                            </div>
-                            <div className="relative w-full xl:w-80 group">
-                                <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors" />
-                                <Input
-                                    placeholder="Recherche intelligente..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-11 h-10 bg-slate-50/50 border-none ring-1 ring-slate-100/80 text-[11px] font-medium focus:ring-primary/20 focus:bg-white transition-all rounded-xl shadow-none"
-                                />
-                            </div>
+                <Card className="lg:col-span-2 card-premium overflow-hidden border-slate-200/50">
+                    <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 pb-6 px-8">
+                        <div className="flex bg-slate-100/50 p-1.5 rounded-xl border border-slate-200/40">
+                            {["All", "Open", "Assigned", "In Progress", "Escalated", "Resolved", "Archived"].map((s) => (
+                                <button
+                                    key={s}
+                                    onClick={() => setFilterStatus(s)}
+                                    className={cn(
+                                        "px-4 py-1.5 text-[11px] font-semibold rounded-lg transition-all",
+                                        filterStatus === s ? "bg-white text-slate-900 shadow-sm border border-slate-200/20" : "text-slate-500 hover:text-slate-700"
+                                    )}
+                                >
+                                    {s === "All" ? "Tous" : s === "In Progress" ? "En Cours" : s}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="relative w-72">
+                            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <Input
+                                placeholder="Rechercher par client, sujet..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-10 h-10 bg-slate-50/50 border-slate-200/60 text-xs font-medium focus:bg-white transition-all rounded-xl shadow-none"
+                            />
                         </div>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -304,84 +300,85 @@ export default function TicketsPage() {
                                         <th className="py-5 px-8 text-right font-bold">Détails</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-50/80">
-                                    {filteredTickets.map((ticket, idx) => {
+                                <tbody className="divide-y divide-slate-50/50">
+                                    {filteredTickets.map((ticket) => {
                                         const status = getStatusConfig(ticket.status);
                                         const isOverdue = new Date(ticket.slaDeadline) < new Date();
 
                                         return (
-                                            <motion.tr
-                                                key={ticket.id}
-                                                initial={{ opacity: 0, x: -10 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: idx * 0.05 }}
-                                                className="group hover:bg-slate-50/40 transition-all duration-300"
-                                            >
-                                                <td className="py-6 px-10">
+                                            <tr key={ticket.id} className="group hover:bg-slate-50/30 transition-colors">
+                                                <td className="py-6 px-8">
                                                     <div className="flex flex-col">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <span className="text-[9px] font-bold text-slate-300 tracking-widest uppercase">#{ticket.id}</span>
-                                                            <div className="w-1 h-1 rounded-full bg-slate-200" />
-                                                            <span className="text-[9px] font-bold text-slate-400/70">{ticket.channel}</span>
+                                                        <div className="flex items-center gap-2 mb-1.5">
+                                                            <span className="text-[10px] font-bold text-slate-400 tracking-tight">#{ticket.id}</span>
+                                                            <span className="text-[10px] font-semibold text-slate-500 bg-slate-100/50 px-1.5 py-0.5 rounded">
+                                                                {ticket.channel}
+                                                            </span>
                                                         </div>
-                                                        <span
-                                                            className="text-[13px] font-semibold text-slate-700 leading-tight group-hover:text-primary transition-colors cursor-pointer max-w-[280px]"
-                                                            onClick={() => { setSelectedTicket(ticket); setIsDetailModalOpen(true); }}
-                                                        >
+                                                        <span className="text-sm font-semibold text-slate-900 group-hover:text-primary transition-colors cursor-pointer" onClick={() => { setSelectedTicket(ticket); setIsDetailModalOpen(true); }}>
                                                             {ticket.subject}
                                                         </span>
-                                                        <div className="flex items-center gap-2 mt-2">
-                                                            <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center text-[7px] font-bold text-slate-400 border border-slate-200/50">
-                                                                {ticket.clientName.charAt(0)}
-                                                            </div>
-                                                            <span className="text-[10px] text-slate-400 font-medium">{ticket.clientName}</span>
-                                                        </div>
+                                                        <span className="text-xs text-slate-500 font-medium mt-1">{ticket.clientName}</span>
                                                     </div>
                                                 </td>
                                                 <td className="py-6 px-4">
                                                     <div className="space-y-2">
                                                         <div className={cn(
-                                                            "inline-flex px-2 py-0 border-none text-[8px] font-bold uppercase tracking-[0.1em]",
-                                                            ticket.priority === "High" ? "text-rose-500" :
-                                                                ticket.priority === "Medium" ? "text-amber-500" :
-                                                                    "text-emerald-500"
+                                                            "inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-tight",
+                                                            ticket.priority === "High" ? "bg-rose-50/50 text-rose-600 border-rose-100/50" :
+                                                                ticket.priority === "Medium" ? "bg-amber-50/50 text-amber-600 border-amber-100/50" :
+                                                                    "bg-emerald-50/50 text-emerald-600 border-emerald-100/50"
                                                         )}>
                                                             {ticket.priority}
                                                         </div>
-                                                        <p className="text-[9px] font-bold text-slate-300 tracking-wider pl-2">{ticket.type}</p>
+                                                        <div className="flex items-center gap-1.5 text-slate-400">
+                                                            <span className="text-[10px] font-semibold text-slate-500/70">{ticket.type}</span>
+                                                        </div>
                                                     </div>
                                                 </td>
                                                 <td className="py-6 px-4">
                                                     <div className="flex flex-col gap-1.5">
                                                         <div className={cn(
-                                                            "flex items-center gap-2 text-[11px] font-medium",
-                                                            isOverdue && ticket.status !== "Closed" ? "text-rose-400" : "text-slate-400"
+                                                            "flex items-center gap-2 text-xs font-medium",
+                                                            isOverdue && ticket.status !== "Closed" ? "text-rose-500" : "text-slate-600"
                                                         )}>
-                                                            <Clock size={11} strokeWidth={2.5} />
+                                                            <Clock size={12} className="opacity-60" />
                                                             {formatDate(ticket.slaDeadline)}
                                                         </div>
                                                         {isOverdue && ticket.status !== "Closed" && (
-                                                            <span className="text-[8px] font-bold text-rose-500 tracking-widest uppercase pl-4">Urgent</span>
+                                                            <span className="text-[9px] font-bold text-rose-500/80 bg-rose-50 px-2 py-0.5 rounded-full w-fit">Retard</span>
                                                         )}
                                                     </div>
                                                 </td>
                                                 <td className="py-6 px-4">
-                                                    <Badge variant="outline" className={cn("text-[8px] font-bold border-none px-3 py-0.5 rounded-full shadow-none capitalize", status.color.split(' ')[1])}>
-                                                        <div className={cn("w-1 h-1 rounded-full mr-1.5", status.color.split(' ')[0].replace('bg-', 'bg-'))} />
+                                                    <Badge className={cn("text-[10px] font-semibold border px-2.5 py-1 rounded-full shadow-none", status.color)}>
+                                                        <status.icon size={11} className="mr-1.5 opacity-80" />
                                                         {status.label}
                                                     </Badge>
                                                 </td>
-                                                <td className="py-6 px-10 text-right">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 w-8 p-0 hover:bg-slate-100 hover:text-primary rounded-lg transition-all"
-                                                        onClick={() => { setSelectedTicket(ticket); setIsDetailModalOpen(true); }}
-                                                    >
-                                                        <ChevronRight size={14} />
-                                                    </Button>
+                                                <td className="py-6 px-8 text-right">
+                                                    <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-9 w-9 p-0 hover:bg-slate-100 hover:text-primary rounded-xl transition-all"
+                                                            onClick={() => { setSelectedTicket(ticket); setIsDetailModalOpen(true); }}
+                                                        >
+                                                            <ChevronRight size={18} />
+                                                        </Button>
+                                                        {isAdmin && !ticket.isArchived && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-9 w-9 p-0 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                                                                onClick={() => handleArchive(ticket.id)}
+                                                            >
+                                                                <Archive size={16} />
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 </td>
-                                            </motion.tr>
+                                            </tr>
                                         );
                                     })}
                                 </tbody>
@@ -390,60 +387,54 @@ export default function TicketsPage() {
                     </CardContent>
                 </Card>
 
+                {/* Automation & Insights */}
                 <div className="space-y-6">
-                    <Card className="border-none bg-slate-900 text-white overflow-hidden relative group shadow-2xl ring-1 ring-slate-800 rounded-[2rem]">
-                        <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:scale-110 transition-transform duration-[3s] pointer-events-none">
-                            <Zap size={140} strokeWidth={1} />
+                    <Card className="card-premium bg-slate-900 text-white overflow-hidden group border-none shadow-xl shadow-slate-200/50">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-1000">
+                            <Zap size={100} />
                         </div>
-                        <CardHeader className="p-8 pb-4">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]">
-                                    <ShieldAlert size={16} />
-                                </div>
-                                <CardTitle className="text-white text-base font-bold tracking-tight">NexCare AI Engine</CardTitle>
-                            </div>
-                            <CardDescription className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Auto-monitoring relationnel</CardDescription>
+                        <CardHeader className="pb-4">
+                            <CardTitle className="text-white flex items-center gap-2 text-lg font-bold">
+                                <ShieldAlert size={18} className="text-primary/80" />
+                                NexCare Intelligence
+                            </CardTitle>
+                            <CardDescription className="text-white/40 font-medium">Auto-monitoring de la relation client</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-8 pt-0 space-y-5 relative z-10">
-                            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-md">
-                                <span className="text-[8px] font-bold text-primary uppercase tracking-[0.2em] block mb-2">Flux Status</span>
+                        <CardContent className="space-y-4 relative z-10 pb-8">
+                            <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                                <span className="text-[10px] font-bold text-primary/70 uppercase tracking-widest block mb-2">Statut Monitor</span>
                                 <div className="flex items-center gap-2.5">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)] animate-pulse" />
-                                    <p className="text-[11px] font-semibold text-slate-300">Opérations Nominal</p>
+                                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" />
+                                    <p className="text-xs font-semibold text-slate-300">Flux SAV opérationnels</p>
                                 </div>
                             </div>
-                            <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-10 transition-all rounded-xl shadow-lg shadow-primary/20 text-[10px] uppercase tracking-wider" variant="secondary">
-                                Intelligence Report
+                            <Button className="w-full bg-white hover:bg-white/90 text-slate-900 font-bold h-11 transition-all rounded-xl" variant="secondary">
+                                <Activity size={16} className="mr-2" />
+                                Rapport Analytique
                             </Button>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.02)] ring-1 ring-slate-100/60 rounded-[2rem] overflow-hidden">
-                        <CardHeader className="p-8 pb-4 border-b border-slate-50">
-                            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center justify-between">
+                    <Card className="card-premium border-slate-200/50 shadow-sm overflow-hidden">
+                        <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4">
+                            <CardTitle className="text-[11px] font-bold uppercase tracking-widest text-slate-400 flex items-center justify-between">
                                 Simulations Système
-                                <Zap size={12} className="text-amber-400 opacity-60" />
+                                <Zap size={14} className="text-amber-400 opacity-60" />
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="grid grid-cols-2 gap-3 p-6">
-                            {[
-                                { label: "Alerte NC", type: "NC", color: "hover:bg-rose-50 hover:text-rose-600 hover:ring-rose-200" },
-                                { label: "Réclam.", type: "Reclamation", color: "hover:bg-amber-50 hover:text-amber-600 hover:ring-amber-200" },
-                                { label: "Incident Tech", type: "Tech", color: "hover:bg-blue-50 hover:text-blue-600 hover:ring-blue-200" },
-                                { label: "Requis Doc", type: "DocRequest", color: "hover:bg-purple-50 hover:text-purple-600 hover:ring-purple-200" }
-                            ].map((sim) => (
-                                <Button
-                                    key={sim.label}
-                                    variant="outline"
-                                    className={cn(
-                                        "text-[9px] font-bold h-10 border-none ring-1 ring-slate-100/80 transition-all rounded-xl shadow-none uppercase tracking-wider",
-                                        sim.color
-                                    )}
-                                    onClick={() => triggerAutomatedTicket({ type: sim.type as any, clientId: "c1", clientName: "Acme Corp" })}
-                                >
-                                    {sim.label}
-                                </Button>
-                            ))}
+                        <CardContent className="grid grid-cols-2 gap-2.5 p-5">
+                            <Button variant="outline" className="text-[10px] font-bold h-11 border-slate-100 hover:border-rose-100 hover:bg-rose-50/30 transition-all rounded-xl shadow-none" onClick={() => triggerAutomatedTicket({ type: "NC", clientId: "c1", clientName: "Acme" })}>
+                                Alerte NC
+                            </Button>
+                            <Button variant="outline" className="text-[10px] font-bold h-11 border-slate-100 hover:border-amber-100 hover:bg-amber-50/30 transition-all rounded-xl shadow-none" onClick={() => triggerAutomatedTicket({ type: "Reclamation", clientId: "c2", clientName: "Global" })}>
+                                Réclam.
+                            </Button>
+                            <Button variant="outline" className="text-[10px] font-bold h-11 border-slate-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all rounded-xl shadow-none" onClick={() => triggerAutomatedTicket({ type: "Tech", clientId: "c3", clientName: "Skyline" })}>
+                                Incident Tech
+                            </Button>
+                            <Button variant="outline" className="text-[10px] font-bold h-11 border-slate-100 hover:border-purple-100 hover:bg-purple-50/30 transition-all rounded-xl shadow-none" onClick={() => triggerAutomatedTicket({ type: "DocRequest", clientId: "c1", clientName: "Acme" })}>
+                                Requis Doc
+                            </Button>
                         </CardContent>
                     </Card>
 
@@ -591,10 +582,10 @@ export default function TicketsPage() {
             <Dialog
                 isOpen={isDetailModalOpen}
                 onClose={() => setIsDetailModalOpen(false)}
-                className="max-w-6xl !p-0 overflow-hidden rounded-[2.5rem] border-none shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] ring-1 ring-slate-100/20"
+                className="max-w-4xl !p-0 overflow-hidden rounded-[1.5rem] border border-slate-100 shadow-2xl shadow-slate-200/40"
             >
                 {selectedTicket && (
-                    <div className="flex flex-col lg:flex-row h-[85vh] max-h-[850px] min-h-[600px] overflow-hidden bg-white/80 backdrop-blur-2xl">
+                    <div className="flex flex-col lg:flex-row h-[75vh] max-h-[750px] overflow-hidden bg-white">
                         {/* Main Info Column */}
                         <div className="flex-1 overflow-y-auto thin-scrollbar p-8 lg:p-10 space-y-10">
                             {/* Header Section */}
