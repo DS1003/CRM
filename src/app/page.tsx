@@ -8,10 +8,21 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Building2, ShieldCheck, ArrowRight, Github } from "lucide-react";
 import { cn } from "@/lib/utils"; // Import cn for conditional classnames
 
+import { useApp } from "@/context/AppContext";
+
 export default function LoginPage() {
   const router = useRouter();
+  const { login, user } = useApp();
   const [isLoading, setIsLoading] = React.useState(false);
   const [selectedRole, setSelectedRole] = React.useState<string | null>(null);
+  const [email, setEmail] = React.useState("admin@nex-crm.io");
+
+  // Redirect if already logged in
+  React.useEffect(() => {
+    if (user) {
+      router.push("/dashboard");
+    }
+  }, [user, router]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +31,11 @@ export default function LoginPage() {
       return;
     }
     setIsLoading(true);
-    // Simulate auth delay
+
+    // Call global login
+    login(email, selectedRole);
+
+    // Simulate auth delay for UX
     setTimeout(() => {
       router.push("/dashboard");
     }, 1500);
@@ -47,9 +62,9 @@ export default function LoginPage() {
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-12">
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <span className="text-white font-bold text-xl">C</span>
+                <span className="text-primary-foreground font-bold text-xl">M</span>
               </div>
-              <span className="font-bold text-2xl tracking-tighter">NexCRM</span>
+              <span className="font-bold text-2xl tracking-tighter">MODERNYS</span>
             </div>
 
             <h1 className="text-4xl font-bold leading-tight mb-6">
@@ -83,9 +98,9 @@ export default function LoginPage() {
         <div className="p-8 md:p-12 flex flex-col justify-center">
           <div className="mb-8 md:hidden flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-white font-bold">C</span>
+              <span className="text-primary-foreground font-bold">M</span>
             </div>
-            <span className="font-bold text-xl tracking-tighter">NexCRM</span>
+            <span className="font-bold text-xl tracking-tighter">MODERNYS</span>
           </div>
 
           <div className="mb-8">

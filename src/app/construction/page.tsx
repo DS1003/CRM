@@ -1,42 +1,51 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
     Building2,
     Search,
     Filter,
     Plus,
-    Clock,
     CheckCircle2,
     AlertTriangle,
     HardHat,
-    Calendar,
     ChevronRight,
     TrendingUp,
-    MapPin
+    MapPin,
+    ArrowUpRight,
+    Calendar,
+    Users
 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-import { mockProjects } from "@/lib/mock-data";
+import { useApp } from "@/context/AppContext";
 import { cn, formatCurrency } from "@/lib/utils";
+import { NewProjectModal } from "@/components/construction/NewProjectModal";
 
 export default function ConstructionPage() {
+    const { projects } = useApp();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const activeCount = projects.filter(p => p.status === "In Progress").length;
+    const completedCount = projects.filter(p => p.status === "Completed").length;
+    const delayedCount = projects.filter(p => p.status === "Delayed").length;
+
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Construction Hub</h1>
-                    <p className="text-muted-foreground mt-1">Enterprise Resource Planning for site operations and technical milestones.</p>
+                    <h1 className="text-4xl font-bold tracking-tight text-slate-900">Construction Hub</h1>
+                    <p className="text-muted-foreground mt-2 text-lg">Enterprise Resource Planning for site operations and technical milestones.</p>
                 </div>
-                <div className="flex gap-3">
-                    <Button variant="outline" className="gap-2">
+                <div className="flex gap-4">
+                    <Button variant="outline" className="gap-2 bg-white border-slate-200 text-slate-600 hover:text-slate-900 shadow-sm h-11 px-5">
                         <TrendingUp size={18} />
                         Forecasting
                     </Button>
-                    <Button className="gap-2 bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
+                    <Button className="gap-2 bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 h-11 px-5" onClick={() => setIsModalOpen(true)}>
                         <Plus size={18} />
                         Initiate Project
                     </Button>
@@ -47,99 +56,116 @@ export default function ConstructionPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatusCard
                     label="Active Projects"
-                    value="12"
+                    value={activeCount.toString()}
                     icon={HardHat}
-                    color="bg-primary"
+                    color="text-primary"
+                    bgColor="bg-blue-50"
+                    borderColor="border-blue-100"
                     description="Projects currently in structural phase"
+                    trend="+12%"
                 />
                 <StatusCard
-                    label="On Schedule"
-                    value="9"
+                    label="Completed Sites"
+                    value={completedCount.toString()}
                     icon={CheckCircle2}
-                    color="bg-emerald-500"
+                    color="text-emerald-600"
+                    bgColor="bg-emerald-50"
+                    borderColor="border-emerald-100"
                     description="Sites meeting all milestone KPIs"
+                    trend="+5%"
                 />
                 <StatusCard
                     label="At Risk"
-                    value="3"
+                    value={delayedCount.toString()}
                     icon={AlertTriangle}
-                    color="bg-rose-500"
+                    color="text-rose-600"
+                    bgColor="bg-rose-50"
+                    borderColor="border-rose-100"
                     description="Delayed by technical validation"
+                    trend="-2%"
                 />
             </div>
 
-            <Card className="border-slate-200">
-                <CardHeader className="flex flex-row items-center justify-between">
+            <Card className="card-premium min-h-[600px]">
+                <CardHeader className="flex flex-row items-center justify-between pb-6 border-b border-slate-50">
                     <div>
-                        <CardTitle>Master Project Ledger</CardTitle>
-                        <CardDescription>Live tracking of all active and pending construction sites.</CardDescription>
+                        <CardTitle className="text-2xl text-slate-900">Master Project Ledger</CardTitle>
+                        <CardDescription className="mt-1">Live tracking of all active and pending construction sites.</CardDescription>
                     </div>
                     <div className="flex gap-4">
-                        <div className="relative w-64">
+                        <div className="relative w-72">
                             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                            <Input placeholder="Search sites..." className="pl-10 h-9 bg-slate-50" />
+                            <Input placeholder="Search sites, managers, or locations..." className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors text-sm font-medium" />
                         </div>
-                        <Button variant="outline" size="sm" className="h-9">
+                        <Button variant="outline" size="sm" className="h-10 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-semibold px-4">
                             <Filter size={16} className="mr-2" />
-                            Filter
+                            Filters
                         </Button>
                     </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6">
                     <div className="grid grid-cols-1 gap-4">
-                        {mockProjects.map((project) => (
+                        {projects.map((project) => (
                             <Link key={project.id} href={`/construction/${project.id}`}>
-                                <div className="p-6 rounded-2xl border border-slate-100 bg-white hover:border-primary/30 hover:shadow-md transition-all group flex flex-col md:flex-row gap-6 cursor-pointer">
+                                <div className="p-6 rounded-2xl border border-slate-100 bg-white hover:border-slate-200 hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-0.5 transition-all group flex flex-col md:flex-row gap-6 cursor-pointer relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0 duration-300">
+                                        <ArrowUpRight className="text-primary" size={24} />
+                                    </div>
+
                                     <div className={cn(
-                                        "w-16 h-16 rounded-2xl flex items-center justify-center text-white shrink-0 group-hover:scale-105 transition-transform",
-                                        project.status === "Delayed" ? "bg-rose-500" : "bg-primary"
+                                        "w-20 h-20 rounded-2xl flex items-center justify-center text-white shrink-0 group-hover:scale-105 transition-transform shadow-lg",
+                                        project.status === "Delayed" ? "bg-rose-500 shadow-rose-500/20" : "bg-slate-900 shadow-slate-900/20"
                                     )}>
                                         <Building2 size={32} />
                                     </div>
 
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-start mb-2">
+                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                        <div className="flex justify-between items-start mb-3">
                                             <div>
-                                                <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{project.name}</h3>
-                                                <p className="text-sm text-slate-400 flex items-center gap-2 mt-0.5">
-                                                    <MapPin size={14} /> {project.clientName}
-                                                </p>
+                                                <h3 className="font-bold text-lg text-slate-900 group-hover:text-primary transition-colors">{project.name}</h3>
+                                                <div className="flex items-center gap-4 mt-1">
+                                                    <p className="text-xs text-slate-500 flex items-center gap-1.5 font-bold uppercase tracking-wide">
+                                                        <MapPin size={12} className="text-slate-400" /> {project.clientName}
+                                                    </p>
+                                                    <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                                    <p className="text-xs text-slate-500 flex items-center gap-1.5 font-bold uppercase tracking-wide">
+                                                        <Users size={12} className="text-slate-400" /> {project.manager}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <Badge variant={project.status === "Delayed" ? "warning" : "success"} className="text-[10px] uppercase font-bold tracking-widest px-3">
+                                            <Badge variant={project.status === "Delayed" ? "warning" : "success"} className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 mr-8 border-none ring-1 ring-inset ring-black/5">
                                                 {project.status}
                                             </Badge>
                                         </div>
 
-                                        <div className="mt-6 flex flex-col md:flex-row md:items-center gap-8">
-                                            <div className="flex-1">
+                                        <div className="mt-2 flex flex-col md:flex-row md:items-center gap-8">
+                                            <div className="flex-1 max-w-md">
                                                 <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-2">
                                                     <span>Phase Completion</span>
-                                                    <span>{project.progress}%</span>
+                                                    <span className="text-slate-900">{project.progress}%</span>
                                                 </div>
                                                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                                                     <div
                                                         className={cn(
-                                                            "h-full transition-all duration-500",
-                                                            project.status === "Delayed" ? "bg-rose-500" : "bg-primary"
+                                                            "h-full transition-all duration-1000 ease-out rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)]",
+                                                            project.status === "Delayed" ? "bg-rose-500 shadow-rose-500/50" : "bg-primary shadow-blue-500/50"
                                                         )}
                                                         style={{ width: `${project.progress}%` }}
                                                     ></div>
                                                 </div>
                                             </div>
 
-                                            <div className="flex gap-8 border-l border-slate-100 pl-8">
+                                            <div className="flex gap-8 border-l border-slate-100 pl-8 ml-auto mr-auto md:mr-16">
                                                 <div className="space-y-1">
-                                                    <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 block underline decoration-primary decoration-2 underline-offset-4">Manager</span>
-                                                    <span className="text-sm font-bold block">{project.manager}</span>
+                                                    <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400 block">Due Date</span>
+                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                                                        <Calendar size={12} className="text-slate-400" />
+                                                        {project.endDate}
+                                                    </div>
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 block transition-all group-hover:text-slate-900">Health</span>
-                                                    <span className="text-sm font-bold block">{formatCurrency(project.budget / 1000)}k</span>
-                                                </div>
-                                                <div className="flex items-center">
-                                                    <Button variant="ghost" size="icon" className="text-slate-300 group-hover:text-primary">
-                                                        <ChevronRight size={24} />
-                                                    </Button>
+                                                    <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400 block transition-all group-hover:text-primary">Budget</span>
+                                                    <span className="text-xs font-black block text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">{formatCurrency(project.budget / 1000)}k</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -150,23 +176,31 @@ export default function ConstructionPage() {
                     </div>
                 </CardContent>
             </Card>
+            <NewProjectModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </div>
     );
 }
 
-function StatusCard({ label, value, icon: Icon, color, description }: any) {
+function StatusCard({ label, value, icon: Icon, color, bgColor, borderColor, description, trend }: any) {
     return (
-        <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+        <Card className="card-premium group hover:border-slate-200 transition-colors">
             <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                    <div className={cn("p-3 rounded-xl text-white", color)}>
+                    <div className={cn("p-3 rounded-xl transition-transform group-hover:scale-110 duration-300 border", bgColor, color, borderColor)}>
                         <Icon size={24} />
                     </div>
-                    <span className="text-3xl font-bold tracking-tight">{value}</span>
+                    <div className="flex flex-col items-end">
+                        <span className="text-4xl font-black tracking-tight text-slate-900">{value}</span>
+                        {trend && (
+                            <Badge variant={trend.startsWith("+") ? "success" : "warning"} className="text-[9px] px-1.5 py-0 h-4 mt-1 border-none bg-slate-100 text-slate-500">
+                                {trend}
+                            </Badge>
+                        )}
+                    </div>
                 </div>
                 <div>
-                    <h4 className="font-bold text-slate-900 text-sm italic">{label}</h4>
-                    <p className="text-xs text-slate-400 mt-1">{description}</p>
+                    <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wide">{label}</h4>
+                    <p className="text-xs text-slate-500 mt-1 font-medium">{description}</p>
                 </div>
             </CardContent>
         </Card>
