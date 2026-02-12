@@ -64,6 +64,7 @@ interface AppContextType {
     notifications: Notification[];
     markNotificationAsRead: (id: string) => void;
     clearAllNotifications: () => void;
+    updateRole: (role: string) => void;
     clients: Client[];
     leads: SaleLead[];
     projects: Project[];
@@ -129,6 +130,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const clearAllNotifications = () => {
         setNotifications([]);
+    };
+
+    const updateRole = (role: string) => {
+        if (user) {
+            const updatedUser = { ...user, role };
+            setUser(updatedUser);
+            localStorage.setItem("modernys_user", JSON.stringify(updatedUser));
+        }
     };
 
     const addClient = (newClient: Omit<Client, "id">) => {
@@ -197,6 +206,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             notifications,
             markNotificationAsRead,
             clearAllNotifications,
+            updateRole,
             clients,
             leads,
             projects,
