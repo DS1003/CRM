@@ -23,14 +23,15 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 
 const menuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-    { icon: Users, label: "Clients & Leads", href: "/clients" },
-    { icon: Briefcase, label: "Sales Pipeline", href: "/sales" },
-    { icon: Layers, label: "Construction Hub", href: "/construction" },
-    { icon: ShieldCheck, label: "CAD & Technical", href: "/cad" },
-    { icon: MessageSquare, label: "Communication", href: "/communication" },
+    { icon: LayoutDashboard, label: "Tableau de bord", href: "/dashboard" },
+    { icon: Users, label: "Clients & Prospects", href: "/clients" },
+    { icon: Briefcase, label: "Pipeline Ventes", href: "/sales" },
+    { icon: Layers, label: "Hub Construction", href: "/construction" },
+    { icon: ShieldCheck, label: "CAO & Technique", href: "/cad" },
+    { icon: MessageSquare, label: "Communications", href: "/communication" },
     { icon: FileText, label: "Documents", href: "/documents" },
-    { icon: BarChart3, label: "Reporting", href: "/reporting" },
+    { icon: LayoutDashboard, label: "Tickets & SAV", href: "/tickets" },
+    { icon: BarChart3, label: "Rapports", href: "/reporting" },
 ];
 
 interface SidebarProps {
@@ -80,7 +81,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
 
             <nav className="flex-1 overflow-y-auto mt-6 px-4 space-y-1 scrollbar-hide">
                 <div className="px-2 mb-3">
-                    {!collapsed && <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Main Menu</p>}
+                    {!collapsed && <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Menu Principal</p>}
                 </div>
                 {menuItems.map((item) => {
                     const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -113,7 +114,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
 
             <div className="mt-auto border-t border-slate-100/50 p-4 space-y-1 pb-6">
                 <div className="px-2 mb-2">
-                    {!collapsed && <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">System</p>}
+                    {!collapsed && <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Système</p>}
                 </div>
                 <Link
                     href="/settings"
@@ -122,7 +123,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
                     )}
                 >
                     <Settings size={18} className="text-slate-400 group-hover:rotate-45 transition-transform" strokeWidth={2} />
-                    {!collapsed && <span className="text-xs">Settings</span>}
+                    {!collapsed && <span className="text-xs">Paramètres</span>}
                 </Link>
                 <button
                     onClick={handleLogout}
@@ -131,7 +132,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
                     )}
                 >
                     <LogOut size={18} className="group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
-                    {!collapsed && <span className="text-xs">Sign Out</span>}
+                    {!collapsed && <span className="text-xs">Déconnexion</span>}
                 </button>
             </div>
         </aside>

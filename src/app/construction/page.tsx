@@ -29,7 +29,7 @@ export default function ConstructionPage() {
     const { projects } = useApp();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const activeCount = projects.filter(p => p.status === "In Progress").length;
+    const activeCount = projects.filter(p => p.status === "In Progress" || p.status === "Planning").length;
     const completedCount = projects.filter(p => p.status === "Completed").length;
     const delayedCount = projects.filter(p => p.status === "Delayed").length;
 
@@ -37,17 +37,17 @@ export default function ConstructionPage() {
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-4xl font-bold tracking-tight text-slate-900">Construction Hub</h1>
-                    <p className="text-muted-foreground mt-2 text-lg">Enterprise Resource Planning for site operations and technical milestones.</p>
+                    <h1 className="text-4xl font-bold tracking-tight text-slate-900">Hub Construction</h1>
+                    <p className="text-muted-foreground mt-2 text-lg">Gestion opérationnelle et suivi des jalons techniques des chantiers.</p>
                 </div>
                 <div className="flex gap-4">
                     <Button variant="outline" className="gap-2 bg-white border-slate-200 text-slate-600 hover:text-slate-900 shadow-sm h-11 px-5">
                         <TrendingUp size={18} />
-                        Forecasting
+                        Prévisions
                     </Button>
-                    <Button className="gap-2 bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 h-11 px-5" onClick={() => setIsModalOpen(true)}>
+                    <Button className="gap-2 bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 h-11 px-5 font-bold" onClick={() => setIsModalOpen(true)}>
                         <Plus size={18} />
-                        Initiate Project
+                        Lancer un projet
                     </Button>
                 </div>
             </div>
@@ -55,33 +55,33 @@ export default function ConstructionPage() {
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatusCard
-                    label="Active Projects"
+                    label="Projets Actifs"
                     value={activeCount.toString()}
                     icon={HardHat}
                     color="text-primary"
                     bgColor="bg-blue-50"
                     borderColor="border-blue-100"
-                    description="Projects currently in structural phase"
+                    description="Projets actuellement en phase structurelle"
                     trend="+12%"
                 />
                 <StatusCard
-                    label="Completed Sites"
+                    label="Sites Terminés"
                     value={completedCount.toString()}
                     icon={CheckCircle2}
                     color="text-emerald-600"
                     bgColor="bg-emerald-50"
                     borderColor="border-emerald-100"
-                    description="Sites meeting all milestone KPIs"
+                    description="Sites ayant atteint tous les jalons KPI"
                     trend="+5%"
                 />
                 <StatusCard
-                    label="At Risk"
+                    label="À Risque"
                     value={delayedCount.toString()}
                     icon={AlertTriangle}
                     color="text-rose-600"
                     bgColor="bg-rose-50"
                     borderColor="border-rose-100"
-                    description="Delayed by technical validation"
+                    description="Retards de validation technique détectés"
                     trend="-2%"
                 />
             </div>
@@ -89,17 +89,17 @@ export default function ConstructionPage() {
             <Card className="card-premium min-h-[600px]">
                 <CardHeader className="flex flex-row items-center justify-between pb-6 border-b border-slate-50">
                     <div>
-                        <CardTitle className="text-2xl text-slate-900">Master Project Ledger</CardTitle>
-                        <CardDescription className="mt-1">Live tracking of all active and pending construction sites.</CardDescription>
+                        <CardTitle className="text-2xl text-slate-900">Registre Global des Projets</CardTitle>
+                        <CardDescription className="mt-1">Suivi en temps réel de tous les chantiers actifs et en attente.</CardDescription>
                     </div>
                     <div className="flex gap-4">
                         <div className="relative w-72">
                             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                            <Input placeholder="Search sites, managers, or locations..." className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors text-sm font-medium" />
+                            <Input placeholder="Rechercher des sites, managers..." className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors text-sm font-medium" />
                         </div>
                         <Button variant="outline" size="sm" className="h-10 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-semibold px-4">
                             <Filter size={16} className="mr-2" />
-                            Filters
+                            Filtres
                         </Button>
                     </div>
                 </CardHeader>
@@ -134,14 +134,16 @@ export default function ConstructionPage() {
                                                 </div>
                                             </div>
                                             <Badge variant={project.status === "Delayed" ? "warning" : "success"} className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 mr-8 border-none ring-1 ring-inset ring-black/5">
-                                                {project.status}
+                                                {project.status === "In Progress" ? "En cours" :
+                                                    project.status === "Delayed" ? "Retardé" :
+                                                        project.status === "Completed" ? "Terminé" : project.status}
                                             </Badge>
                                         </div>
 
                                         <div className="mt-2 flex flex-col md:flex-row md:items-center gap-8">
                                             <div className="flex-1 max-w-md">
                                                 <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-2">
-                                                    <span>Phase Completion</span>
+                                                    <span>Progression de la Phase</span>
                                                     <span className="text-slate-900">{project.progress}%</span>
                                                 </div>
                                                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
@@ -157,7 +159,7 @@ export default function ConstructionPage() {
 
                                             <div className="flex gap-8 border-l border-slate-100 pl-8 ml-auto mr-auto md:mr-16">
                                                 <div className="space-y-1">
-                                                    <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400 block">Due Date</span>
+                                                    <span className="text-[9px] uppercase font-bold tracking-widest text-slate-400 block">Date échéance</span>
                                                     <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
                                                         <Calendar size={12} className="text-slate-400" />
                                                         {project.endDate}

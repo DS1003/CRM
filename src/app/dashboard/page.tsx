@@ -40,11 +40,11 @@ import { cn } from "@/lib/utils";
 
 const revenueData = [
     { month: "Jan", revenue: 450000, target: 400000 },
-    { month: "Feb", revenue: 520000, target: 400000 },
+    { month: "Fév", revenue: 520000, target: 400000 },
     { month: "Mar", revenue: 480000, target: 450000 },
-    { month: "Apr", revenue: 610000, target: 450000 },
-    { month: "May", revenue: 590000, target: 500000 },
-    { month: "Jun", revenue: 720000, target: 500000 },
+    { month: "Avr", revenue: 610000, target: 450000 },
+    { month: "Mai", revenue: 590000, target: 500000 },
+    { month: "Juin", revenue: 720000, target: 500000 },
 ];
 
 export default function DashboardPage() {
@@ -60,17 +60,17 @@ export default function DashboardPage() {
     };
 
     const projectsDistributionData = [
-        { name: "In Progress", value: projectStats.inProgress, color: "hsl(var(--primary))" },
-        { name: "Planning", value: projectStats.planning, color: "#94a3b8" },
-        { name: "Delayed", value: projectStats.delayed, color: "#f43f5e" },
-        { name: "Completed", value: projectStats.completed, color: "#10b981" },
+        { name: "En cours", value: projectStats.inProgress, color: "hsl(var(--primary))" },
+        { name: "Planification", value: projectStats.planning, color: "#94a3b8" },
+        { name: "Retardé", value: projectStats.delayed, color: "#f43f5e" },
+        { name: "Terminé", value: projectStats.completed, color: "#10b981" },
     ];
 
     // Take top 5 recent leads
     const recentLeads = [...leads].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5);
 
     const handleExport = () => {
-        alert("Preparing executive brief... Report will be available in the Documents section.");
+        alert("Préparation du rapport exécutif... Le rapport sera disponible dans la section Documents.");
     };
 
     return (
@@ -89,12 +89,12 @@ export default function DashboardPage() {
                                 animate={{ opacity: 1, x: 0 }}
                                 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 leading-tight"
                             >
-                                Executive <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">Overview</span>
+                                Vue <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">Exécutive</span>
                             </motion.h1>
                         </div>
                         <p className="text-slate-500 text-lg font-medium opacity-70 flex items-center gap-2">
                             <CalendarDays size={20} className="text-slate-400" />
-                            Fiscal Year 2024 • Global Performance
+                            Année Fiscale 2024 • Performance Globale
                         </p>
                     </div>
 
@@ -112,14 +112,14 @@ export default function DashboardPage() {
                             className="bg-white/80 backdrop-blur border-slate-200 text-slate-600 hover:text-primary hover:border-primary/20 shadow-sm h-12 px-6 font-bold rounded-2xl transition-all"
                         >
                             <ExternalLink size={18} className="mr-2" />
-                            Report
+                            Rapport
                         </Button>
                         <Button
                             onClick={() => setIsDealModalOpen(true)}
                             className="bg-slate-900 hover:bg-slate-800 text-white font-black shadow-2xl shadow-slate-900/10 h-12 px-6 rounded-2xl transition-all group"
                         >
                             <Plus size={18} className="mr-2 group-hover:rotate-90 transition-transform" />
-                            Capture Deal
+                            Capturer une opportunité
                         </Button>
                     </div>
                 </div>
@@ -130,36 +130,36 @@ export default function DashboardPage() {
                     {/* Stats Section - Top Row Full Width */}
                     <div className="col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
                         <StatsCard
-                            title="Gross Revenue"
+                            title="Chiffre d'Affaires Brut"
                             value={`$${(stats.totalRevenue / 1000000).toFixed(1)}M`}
                             change={12.5}
                             trend="up"
                             icon={TrendingUp}
-                            description="validated revenue • Q3 target"
+                            description="Revenus validés • Objectif Q3"
                         />
                         <StatsCard
-                            title="Pipeline Load"
+                            title="Charge du Pipeline"
                             value={stats.activeProjects.toString()}
                             change={8.2}
                             trend="up"
                             icon={Briefcase}
-                            description="current operational cap."
+                            description="Capacité opérationnelle actuelle"
                         />
                         <StatsCard
-                            title="Client Base"
+                            title="Base Clients"
                             value={stats.clientCount.toString()}
                             change={4.1}
                             trend="up"
                             icon={Users}
-                            description="new account activations"
+                            description="Nouvelles activations de comptes"
                         />
                         <StatsCard
-                            title="Lead Velocity"
+                            title="Vélocité Prospect"
                             value="92%"
                             change={2.4}
                             trend="down"
                             icon={Activity}
-                            description="conversion vs Q2 target"
+                            description="Conversion vs Objectif Q2"
                         />
                     </div>
 
@@ -171,13 +171,13 @@ export default function DashboardPage() {
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
                                             <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                            <CardTitle className="text-2xl font-black text-slate-900">Revenue Trajectory</CardTitle>
+                                            <CardTitle className="text-2xl font-black text-slate-900">Trajectoire des Revenus</CardTitle>
                                         </div>
-                                        <CardDescription className="mt-1 font-bold text-slate-400">Monthly breakdown of closed deals vs corporate targets.</CardDescription>
+                                        <CardDescription className="mt-1 font-bold text-slate-400">Analyse mensuelle des opportunités conclues vs objectifs.</CardDescription>
                                     </div>
                                     <div className="flex gap-2">
                                         <Badge variant="secondary" className="bg-slate-100/50 text-slate-500 border-none font-black px-3 py-1">2024</Badge>
-                                        <Badge className="bg-primary/5 text-primary border-none font-black px-3 py-1 ring-1 ring-primary/20">TARGET: 105%</Badge>
+                                        <Badge className="bg-primary/5 text-primary border-none font-black px-3 py-1 ring-1 ring-primary/20">CIBLE: 105%</Badge>
                                     </div>
                                 </div>
                             </CardHeader>
@@ -214,7 +214,7 @@ export default function DashboardPage() {
                                                 padding: '16px',
                                                 background: 'rgba(255, 255, 255, 0.98)',
                                             }}
-                                            formatter={(value: number) => [`$${value.toLocaleString()}`, 'Amount']}
+                                            formatter={(value: number) => [`$${value.toLocaleString()}`, 'Montant']}
                                             labelStyle={{ color: '#0f172a', marginBottom: '8px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '10px' }}
                                         />
                                         <Area
@@ -244,8 +244,8 @@ export default function DashboardPage() {
                     <div className="col-span-12 xl:col-span-4">
                         <Card className="card-premium h-full flex flex-col pt-2">
                             <CardHeader className="border-b border-slate-50/50 p-8">
-                                <CardTitle className="text-2xl font-black text-slate-900">Project Integrity</CardTitle>
-                                <CardDescription className="mt-1 font-bold text-slate-400">Distribution of active construction phases.</CardDescription>
+                                <CardTitle className="text-2xl font-black text-slate-900">Intégrité Projet</CardTitle>
+                                <CardDescription className="mt-1 font-bold text-slate-400">Répartition des phases de construction actives.</CardDescription>
                             </CardHeader>
                             <CardContent className="p-8 flex-1 flex flex-col justify-between pt-10">
                                 <div className="h-[200px] w-full">
@@ -282,12 +282,12 @@ export default function DashboardPage() {
                                     <div className="p-6 rounded-3xl bg-emerald-50/30 border border-emerald-100 flex flex-col items-center group/stat hover:bg-white hover:shadow-xl hover:shadow-emerald-100/50 transition-all cursor-default">
                                         <CheckCircle2 className="text-emerald-500 mb-2 group-hover/stat:scale-110 transition-transform" size={18} />
                                         <span className="text-4xl font-black text-slate-900 leading-none">{projectStats.inProgress + projectStats.completed}</span>
-                                        <span className="text-[9px] text-emerald-600 uppercase tracking-[0.2em] font-black mt-3">VALIDATED</span>
+                                        <span className="text-[9px] text-emerald-600 uppercase tracking-[0.2em] font-black mt-3">VALIDÉS</span>
                                     </div>
                                     <div className="p-6 rounded-3xl bg-rose-50/30 border border-rose-100 flex flex-col items-center group/stat hover:bg-white hover:shadow-xl hover:shadow-rose-100/50 transition-all cursor-default">
                                         <AlertCircle className="text-rose-500 mb-2 group-hover/stat:scale-110 transition-transform" size={18} />
                                         <span className="text-4xl font-black text-rose-500 leading-none">{projectStats.delayed}</span>
-                                        <span className="text-[9px] text-rose-600 uppercase tracking-[0.2em] font-black mt-3">AT RISK</span>
+                                        <span className="text-[9px] text-rose-600 uppercase tracking-[0.2em] font-black mt-3">À RISQUE</span>
                                     </div>
                                 </div>
                             </CardContent>
@@ -299,11 +299,11 @@ export default function DashboardPage() {
                         <Card className="card-premium">
                             <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50/50 p-8">
                                 <div>
-                                    <CardTitle className="text-2xl font-black text-slate-900">Active Deals</CardTitle>
-                                    <CardDescription className="mt-1 font-bold text-slate-400">Proprietary scoring and stage tracking.</CardDescription>
+                                    <CardTitle className="text-2xl font-black text-slate-900">Opportunités Actives</CardTitle>
+                                    <CardDescription className="mt-1 font-bold text-slate-400">Scoring propriétaire et suivi des étapes.</CardDescription>
                                 </div>
                                 <Button variant="ghost" size="sm" className="text-primary hover:text-primary/10 hover:bg-primary/5 font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl">
-                                    Pipeline Map <ChevronRight size={14} className="ml-1" />
+                                    Carte du Pipeline <ChevronRight size={14} className="ml-1" />
                                 </Button>
                             </CardHeader>
                             <CardContent className="p-0">
@@ -311,11 +311,11 @@ export default function DashboardPage() {
                                     <table className="w-full border-collapse">
                                         <thead>
                                             <tr className="border-b border-slate-50 text-left text-[11px] text-slate-300 uppercase tracking-[0.2em] font-black">
-                                                <th className="p-8 pb-5 font-black">Designation</th>
-                                                <th className="py-8 pb-5 font-black">Entity</th>
-                                                <th className="py-8 pb-5 font-black">Valuation</th>
-                                                <th className="py-8 pb-5 font-black">Stage</th>
-                                                <th className="p-8 pb-5 font-black text-right">Success Score</th>
+                                                <th className="p-8 pb-5 font-black">Désignation</th>
+                                                <th className="py-8 pb-5 font-black">Entité</th>
+                                                <th className="py-8 pb-5 font-black">Valeur</th>
+                                                <th className="py-8 pb-5 font-black">Étape</th>
+                                                <th className="p-8 pb-5 font-black text-right">Probabilité Réussite</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-50/50">
@@ -379,10 +379,10 @@ export default function DashboardPage() {
                             <CardHeader className="relative z-10 pb-10 border-b border-white/5 p-8">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="h-2 w-2 rounded-full bg-primary animate-ping shadow-[0_0_15px_rgba(59,130,246,1)]"></div>
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">QUANTUM ANALYTICS CORE</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">CŒUR ANALYTIQUE QUANTIQUE</span>
                                 </div>
-                                <CardTitle className="text-white text-3xl font-black leading-tight italic tracking-tighter">Strategic<br />Intelligence</CardTitle>
-                                <CardDescription className="text-slate-500 font-bold mt-2">Predictive modeling for pipeline acceleration.</CardDescription>
+                                <CardTitle className="text-white text-3xl font-black leading-tight italic tracking-tighter">Intelligence<br />Stratégique</CardTitle>
+                                <CardDescription className="text-slate-500 font-bold mt-2">Modélisation prédictive pour l'accélération du pipeline.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6 pt-10 p-8 relative z-10">
                                 <motion.div
@@ -395,10 +395,10 @@ export default function DashboardPage() {
                                         <div className="p-2 rounded-xl bg-emerald-500/10">
                                             <TrendingUp size={18} strokeWidth={2.5} />
                                         </div>
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Opportunity Detected</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Opportunité Détectée</span>
                                     </div>
                                     <p className="text-[11px] text-slate-300 leading-relaxed font-bold opacity-80">
-                                        Manufacturing sector shows <span className="text-white underline decoration-emerald-500/50 underline-offset-4 decoration-2">15% higher velocity</span>. Priority target: Q3 expansions in this vertical.
+                                        Le secteur industriel montre une <span className="text-white underline decoration-emerald-500/50 underline-offset-4 decoration-2">vélocité 15% plus élevée</span>. Cible prioritaire : expansions Q3 dans ce vertical.
                                     </p>
                                 </motion.div>
 
@@ -412,19 +412,19 @@ export default function DashboardPage() {
                                         <div className="p-2 rounded-xl bg-amber-500/10">
                                             <Clock size={18} strokeWidth={2.5} />
                                         </div>
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Resource Forecast</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Prévision Ressources</span>
                                     </div>
                                     <p className="text-[11px] text-slate-300 leading-relaxed font-bold opacity-80">
-                                        Technical validation backlog detected. Recommended: Allocation of <span className="text-white underline decoration-amber-500/50 underline-offset-4 decoration-2">2 additional CAD resources</span> to project-482.
+                                        Surcharge de validation technique détectée. Recommandé : Allocation de <span className="text-white underline decoration-amber-500/50 underline-offset-4 decoration-2">2 ressources CAO additionnelles</span> au projet-482.
                                     </p>
                                 </motion.div>
 
                                 <div className="pt-2">
                                     <Button className="w-full bg-white text-slate-900 hover:bg-slate-100 font-black border-none h-14 shadow-2xl rounded-2xl transition-all flex items-center justify-center gap-2 group/btn">
-                                        Strategic Audit
+                                        Audit Stratégique
                                         <ChevronRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
                                     </Button>
-                                    <p className="text-center text-slate-600 text-[10px] font-bold mt-4 uppercase tracking-widest opacity-60">Last update: 2 minutes ago</p>
+                                    <p className="text-center text-slate-600 text-[10px] font-bold mt-4 uppercase tracking-widest opacity-60">Dernière mise à jour : il y a 2 minutes</p>
                                 </div>
                             </CardContent>
                         </Card>

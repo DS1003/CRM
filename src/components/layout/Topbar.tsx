@@ -65,9 +65,11 @@ export function Topbar() {
     };
 
     const roles = [
-        { name: "Admin Hub", icon: Shield, id: "admin" },
-        { name: "Sales Hub", icon: TrendingUp, id: "sales" },
-        { name: "Project Hub", icon: Briefcase, id: "project" },
+        { name: "Admin", icon: Shield, id: "admin" },
+        { name: "Ventes", icon: TrendingUp, id: "sales" },
+        { name: "Chef de projet", icon: Briefcase, id: "project" },
+        { name: "BO", icon: Layout, id: "bo" },
+        { name: "Serv Tech", icon: Zap, id: "serv_tech" },
     ];
 
     return (
@@ -76,10 +78,10 @@ export function Topbar() {
             <div className="flex-1 max-w-lg">
                 <button
                     onClick={() => setIsSearchOpen(true)}
-                    className="flex items-center gap-3 px-4 py-2 w-full rounded-xl bg-slate-50/50 border border-slate-200/50 text-slate-400 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all group group"
+                    className="flex items-center gap-3 px-4 py-2 w-full rounded-xl bg-slate-50/50 border border-slate-200/50 text-slate-400 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all group"
                 >
                     <Search size={16} className="group-hover:text-primary transition-colors" />
-                    <span className="text-xs font-medium">Search Command...</span>
+                    <span className="text-xs font-medium">Rechercher...</span>
                     <div className="ml-auto flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
                         <kbd className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-white border border-slate-200">⌘</kbd>
                         <kbd className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-white border border-slate-200">K</kbd>
@@ -99,7 +101,7 @@ export function Topbar() {
                         )}
                     >
                         <Layout size={14} className="text-slate-400" />
-                        <span>{user?.role || "Select Hub"}</span>
+                        <span>{user?.role || "Sélecteur de Hub"}</span>
                         <ChevronDown size={12} className={cn("transition-transform duration-200", isRoleOpen && "rotate-180")} />
                     </button>
 
@@ -113,7 +115,7 @@ export function Topbar() {
                                     exit={{ opacity: 0, y: 8, scale: 0.98 }}
                                     className="absolute top-full mt-2 right-0 w-52 bg-white border border-slate-200/60 rounded-xl shadow-xl shadow-slate-200/20 p-1.5 z-20"
                                 >
-                                    <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Workspace</div>
+                                    <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Espace de travail</div>
                                     <div className="space-y-0.5">
                                         {roles.map((r) => (
                                             <button
@@ -172,7 +174,7 @@ export function Topbar() {
                                             onClick={clearAllNotifications}
                                             className="text-[10px] font-semibold text-slate-400 hover:text-primary transition-colors"
                                         >
-                                            Clear
+                                            Effacer
                                         </button>
                                     </div>
                                     <div className="max-h-80 overflow-y-auto thin-scrollbar">
@@ -208,12 +210,12 @@ export function Topbar() {
                                         ) : (
                                             <div className="py-12 text-center text-slate-400 bg-white">
                                                 <Bell size={24} className="mx-auto mb-2 opacity-10" />
-                                                <p className="text-[10px] font-medium italic">No new signals</p>
+                                                <p className="text-[10px] font-medium italic">Aucun nouveau signal</p>
                                             </div>
                                         )}
                                     </div>
                                     <button className="w-full py-2.5 text-[10px] font-bold text-slate-400 hover:text-primary hover:bg-slate-50 border-t border-slate-100 transition-all uppercase tracking-widest">
-                                        View Dashboard
+                                        Tableau de bord
                                     </button>
                                 </motion.div>
                             </>
@@ -257,17 +259,17 @@ export function Topbar() {
                                     </div>
                                     <div className="space-y-0.5">
                                         <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
-                                            <UserIcon size={14} className="text-slate-400" /> My Profile
+                                            <UserIcon size={14} className="text-slate-400" /> Mon profil
                                         </button>
                                         <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
-                                            <Settings size={14} className="text-slate-400" /> Account Settings
+                                            <Settings size={14} className="text-slate-400" /> Paramètres
                                         </button>
                                         <div className="h-px bg-slate-100 my-1.5 mx-2" />
                                         <button
                                             onClick={handleLogout}
                                             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-rose-500 hover:bg-rose-50 transition-all"
                                         >
-                                            <LogOut size={14} /> Sign Out
+                                            <LogOut size={14} /> Déconnexion
                                         </button>
                                     </div>
                                 </motion.div>
@@ -287,7 +289,7 @@ export function Topbar() {
                     <Search className="text-slate-400" size={20} />
                     <input
                         autoFocus
-                        placeholder="Type to search..."
+                        placeholder="Taper pour rechercher..."
                         className="flex-1 bg-transparent border-none outline-none text-slate-900 font-medium placeholder:text-slate-300 h-8"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -298,15 +300,15 @@ export function Topbar() {
                 <div className="p-3 max-h-96 overflow-y-auto thin-scrollbar">
                     {searchQuery.length === 0 ? (
                         <div className="grid grid-cols-2 gap-2 p-1">
-                            <QuickAction icon={TrendingUp} label="Sales Hub" shortcut="S" onClick={() => { updateRole("Sales Hub"); setIsSearchOpen(false); }} />
-                            <QuickAction icon={Briefcase} label="Project Hub" shortcut="P" onClick={() => { updateRole("Project Hub"); setIsSearchOpen(false); }} />
-                            <QuickAction icon={Layout} label="Dashboard" shortcut="D" onClick={() => { router.push("/dashboard"); setIsSearchOpen(false); }} />
-                            <QuickAction icon={MessageSquare} label="Reporting" shortcut="R" onClick={() => { router.push("/reporting"); setIsSearchOpen(false); }} />
+                            <QuickAction icon={TrendingUp} label="Hub Ventes" shortcut="S" onClick={() => { updateRole("Hub Ventes"); setIsSearchOpen(false); }} />
+                            <QuickAction icon={Briefcase} label="Hub Projets" shortcut="P" onClick={() => { updateRole("Hub Projets"); setIsSearchOpen(false); }} />
+                            <QuickAction icon={Layout} label="Tableau de bord" shortcut="D" onClick={() => { router.push("/dashboard"); setIsSearchOpen(false); }} />
+                            <QuickAction icon={MessageSquare} label="Rapports" shortcut="R" onClick={() => { router.push("/reporting"); setIsSearchOpen(false); }} />
                         </div>
                     ) : (
                         <div className="p-8 text-center text-slate-400 space-y-2">
                             <Search size={32} className="mx-auto opacity-10" />
-                            <p className="text-xs font-semibold uppercase tracking-widest italic">No match found</p>
+                            <p className="text-xs font-semibold uppercase tracking-widest italic">Aucun résultat trouvé</p>
                         </div>
                     )}
                 </div>
@@ -315,11 +317,11 @@ export function Topbar() {
                     <div className="flex items-center gap-3 opacity-50">
                         <div className="flex items-center gap-1">
                             <kbd className="px-1.5 py-0.5 text-[9px] font-bold bg-white border border-slate-200 rounded text-slate-400">⏎</kbd>
-                            <span className="text-[9px] font-bold uppercase tracking-tight">Select</span>
+                            <span className="text-[9px] font-bold uppercase tracking-tight">Sélectionner</span>
                         </div>
                         <div className="flex items-center gap-1">
                             <kbd className="px-1.5 py-0.5 text-[9px] font-bold bg-white border border-slate-200 rounded text-slate-400">↑↓</kbd>
-                            <span className="text-[9px] font-bold uppercase tracking-tight">Move</span>
+                            <span className="text-[9px] font-bold uppercase tracking-tight">Naviguer</span>
                         </div>
                     </div>
                 </div>

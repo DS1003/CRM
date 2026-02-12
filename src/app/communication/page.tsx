@@ -22,7 +22,7 @@ import { mockCommunications } from "@/lib/mock-data";
 import { cn, formatDate } from "@/lib/utils";
 
 export default function CommunicationPage() {
-    const [activeTab, setActiveTab] = React.useState<"All" | "Email" | "WhatsApp" | "Internal Note">("All");
+    const [activeTab, setActiveTab] = React.useState<"All" | "Email" | "WhatsApp" | "Note Interne">("All");
 
     const filteredComms = activeTab === "All"
         ? mockCommunications
@@ -32,7 +32,7 @@ export default function CommunicationPage() {
         switch (type) {
             case "Email": return <Mail size={16} className="text-blue-500" />;
             case "WhatsApp": return <Smartphone size={16} className="text-emerald-500" />;
-            case "Internal Note": return <FileEdit size={16} className="text-amber-500" />;
+            case "Note Interne": return <FileEdit size={16} className="text-amber-500" />;
             default: return <MessageSquare size={16} />;
         }
     };
@@ -41,21 +41,21 @@ export default function CommunicationPage() {
         <div className="flex flex-col h-[calc(100vh-160px)] space-y-6 animate-in fade-in duration-500">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">Communication Hub</h1>
-                    <p className="text-muted-foreground mt-1">Unified view of all omnichannel interactions and internal notes.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">Hub de Communication</h1>
+                    <p className="text-muted-foreground mt-1">Vue unifiée de toutes les interactions omnicanales et notes internes.</p>
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" className="gap-2 bg-white/50 border-slate-200">
                         <Mail size={16} />
-                        Integrate Email
+                        Intégrer Email
                     </Button>
                     <Button variant="outline" size="sm" className="gap-2 bg-white/50 border-slate-200">
                         <Smartphone size={16} />
-                        Setup WhatsApp
+                        Configurer WhatsApp
                     </Button>
                     <Button size="sm" className="gap-2 bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20">
                         <Plus size={16} />
-                        New Message
+                        Nouveau Message
                     </Button>
                 </div>
             </div>
@@ -66,28 +66,28 @@ export default function CommunicationPage() {
                     <Card className="card-premium">
                         <CardContent className="p-4 space-y-2">
                             <div className="flex items-center justify-between mb-2 px-3 pt-2">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Channels</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Canaux Actifs</span>
                                 <Badge variant="success" className="h-2 w-2 p-0 rounded-full animate-pulse"></Badge>
                             </div>
                             <div className="space-y-1">
                                 {[
-                                    { label: "All Communications", icon: MessageSquare, value: "All" },
+                                    { label: "Toutes les Communications", icon: MessageSquare, value: "All" },
                                     { label: "Email (Outlook)", icon: Mail, value: "Email" },
                                     { label: "WhatsApp Business", icon: Smartphone, value: "WhatsApp" },
-                                    { label: "Internal Team Notes", icon: FileEdit, value: "Internal Note" },
+                                    { label: "Notes Internes d'Équipe", icon: FileEdit, value: "Note Interne" },
                                 ].map((item) => (
                                     <button
                                         key={item.value}
                                         onClick={() => setActiveTab(item.value as any)}
                                         className={cn(
-                                            "flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group",
+                                            "flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group text-left",
                                             activeTab === item.value
                                                 ? "bg-slate-900 text-white shadow-md shadow-slate-900/20"
                                                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                                         )}
                                     >
-                                        <item.icon size={18} className={cn("transition-colors", activeTab === item.value ? "text-primary" : "text-slate-400 group-hover:text-slate-600")} />
-                                        {item.label}
+                                        <item.icon size={18} className={cn("transition-colors shrink-0", activeTab === item.value ? "text-primary" : "text-slate-400 group-hover:text-slate-600")} />
+                                        <span className="truncate">{item.label}</span>
                                     </button>
                                 ))}
                             </div>
@@ -99,11 +99,11 @@ export default function CommunicationPage() {
                             <ArrowUpRight size={120} />
                         </div>
                         <CardContent className="p-6 relative z-10">
-                            <span className="text-[10px] uppercase font-bold tracking-widest text-primary mb-2 block">AI Assistant</span>
-                            <h4 className="text-lg font-bold leading-tight">3 Communications require immediate response.</h4>
-                            <p className="text-xs text-slate-400 mt-2 leading-relaxed">I can draft suggested replies based on previous contract history and tone analysis.</p>
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-primary mb-2 block">Assistant IA</span>
+                            <h4 className="text-lg font-bold leading-tight">3 communications nécessitent une réponse immédiate.</h4>
+                            <p className="text-xs text-slate-400 mt-2 leading-relaxed">Je peux rédiger des suggestions de réponse basées sur l'historique et l'analyse du ton.</p>
                             <Button className="w-full mt-4 bg-white/10 text-white hover:bg-white/20 border-white/10 border text-xs font-bold h-9">
-                                Draft with NexAI
+                                Rédiger avec NexAI
                             </Button>
                         </CardContent>
                     </Card>
@@ -113,7 +113,7 @@ export default function CommunicationPage() {
                 <div className="lg:col-span-3 flex flex-col space-y-4 overflow-hidden h-full">
                     <div className="flex gap-4 items-center bg-white p-2 rounded-2xl border border-slate-200 shadow-sm px-4">
                         <Search size={18} className="text-slate-400" />
-                        <Input placeholder="Search threads, subject, content or sender..." className="border-none shadow-none focus-visible:ring-0 bg-transparent h-10 text-sm" />
+                        <Input placeholder="Rechercher des fils, sujets, contenus ou expéditeurs..." className="border-none shadow-none focus-visible:ring-0 bg-transparent h-10 text-sm" />
                     </div>
 
                     <div className="flex-1 overflow-y-auto pr-2 space-y-4 pb-4 custom-scrollbar">
@@ -122,7 +122,7 @@ export default function CommunicationPage() {
                                 <CardContent className="p-0">
                                     <div className="flex">
                                         <div className={cn(
-                                            "w-14 flex flex-col items-center pt-6 bg-slate-50/50 border-r border-slate-100/50 transition-colors",
+                                            "w-14 flex flex-col items-center pt-6 bg-slate-50/50 border-r border-slate-100/50 transition-colors shrink-0",
                                             comm.type === "Email" ? "group-hover:bg-blue-50/30" :
                                                 comm.type === "WhatsApp" ? "group-hover:bg-emerald-50/30" :
                                                     "group-hover:bg-amber-50/30"
@@ -136,18 +136,18 @@ export default function CommunicationPage() {
                                                 {getTypeIcon(comm.type)}
                                             </div>
                                         </div>
-                                        <div className="flex-1 p-5">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div className="flex items-center gap-3">
+                                        <div className="flex-1 p-5 overflow-hidden">
+                                            <div className="flex justify-between items-start mb-2 overflow-hidden">
+                                                <div className="flex items-center gap-3 overflow-hidden">
                                                     <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border border-slate-200 shadow-sm flex items-center justify-center shrink-0">
                                                         <User size={20} className="text-slate-400" />
                                                     </div>
-                                                    <div>
-                                                        <h4 className="font-bold text-slate-900 text-sm">{comm.sender}</h4>
-                                                        <p className="text-[11px] text-slate-500 font-medium">{comm.recipient}</p>
+                                                    <div className="overflow-hidden">
+                                                        <h4 className="font-bold text-slate-900 text-sm truncate">{comm.sender}</h4>
+                                                        <p className="text-[11px] text-slate-500 font-medium truncate">{comm.recipient}</p>
                                                     </div>
                                                 </div>
-                                                <div className="flex flex-col items-end gap-1">
+                                                <div className="flex flex-col items-end gap-1 shrink-0">
                                                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{formatDate(comm.timestamp)}</span>
                                                     <div className="flex gap-1 items-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <Badge variant="secondary" className="text-[9px] uppercase tracking-tighter h-5 px-1.5 border-slate-200 bg-slate-50">
@@ -160,26 +160,26 @@ export default function CommunicationPage() {
                                                 </div>
                                             </div>
 
-                                            {comm.subject && <h5 className="font-bold text-sm mb-1 text-slate-800">{comm.subject}</h5>}
+                                            {comm.subject && <h5 className="font-bold text-sm mb-1 text-slate-800 truncate">{comm.subject}</h5>}
                                             <p className="text-xs text-slate-600 line-clamp-2 mb-4 leading-relaxed max-w-3xl">
                                                 {comm.content}
                                             </p>
 
-                                            <div className="flex items-center justify-between pt-3 border-t border-slate-50">
-                                                <div className="flex gap-2">
+                                            <div className="flex items-center justify-between pt-3 border-t border-slate-50 gap-4">
+                                                <div className="flex gap-2 overflow-hidden">
                                                     {comm.attachment && (
                                                         <Badge variant="outline" className="gap-1.5 py-1 px-2 border-slate-200 bg-slate-50/50 shadow-sm text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer">
-                                                            <Paperclip size={10} />
-                                                            <span className="text-[9px] font-bold truncate max-w-[150px]">{comm.attachment}</span>
+                                                            <Paperclip size={10} className="shrink-0" />
+                                                            <span className="text-[9px] font-bold truncate max-w-[120px]">{comm.attachment}</span>
                                                         </Badge>
                                                     )}
                                                 </div>
-                                                <div className="flex gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex gap-2 opacity-60 group-hover:opacity-100 transition-opacity shrink-0">
                                                     <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900">
-                                                        Mark Resolved
+                                                        Marquer comme résolu
                                                     </Button>
                                                     <Button size="sm" className="h-7 text-[10px] font-bold uppercase tracking-widest gap-2 bg-slate-900 text-white shadow-sm hover:bg-slate-800">
-                                                        Reply
+                                                        Répondre
                                                         <ArrowRight size={10} />
                                                     </Button>
                                                 </div>
@@ -193,7 +193,7 @@ export default function CommunicationPage() {
                         {filteredComms.length === 0 && (
                             <div className="flex flex-col items-center justify-center h-64 text-slate-300 border-2 border-dashed border-slate-100 rounded-3xl m-4">
                                 <MessageSquare size={48} className="opacity-10 mb-4" />
-                                <p className="text-xs font-bold uppercase tracking-widest opacity-40">No communications found</p>
+                                <p className="text-xs font-bold uppercase tracking-widest opacity-40">Aucune communication trouvée</p>
                             </div>
                         )}
                     </div>

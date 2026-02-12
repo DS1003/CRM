@@ -41,7 +41,7 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-100">
                 <div className="flex justify-between items-center p-6 border-b border-slate-50 bg-slate-50/50">
-                    <h2 className="text-xl font-bold text-slate-800">New Client</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Nouveau Client</h2>
                     <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-slate-200/50">
                         <X size={20} className="text-slate-400" />
                     </Button>
@@ -49,12 +49,12 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Company / Name</label>
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Société / Nom</label>
                         <div className="relative">
                             <Building size={16} className="absolute left-3 top-3 text-slate-400" />
                             <Input
                                 required
-                                placeholder="Acme Corp"
+                                placeholder="Ex: Modernys Construction"
                                 className="pl-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -70,7 +70,7 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
                                 <Input
                                     required
                                     type="email"
-                                    placeholder="contact@acme.com"
+                                    placeholder="contact@client.com"
                                     className="pl-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -78,11 +78,11 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Phone</label>
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Téléphone</label>
                             <div className="relative">
                                 <Phone size={16} className="absolute left-3 top-3 text-slate-400" />
                                 <Input
-                                    placeholder="+1 (555) 000-0000"
+                                    placeholder="+33 6 00 00 00 00"
                                     className="pl-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -92,11 +92,11 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Industry</label>
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Secteur d'activité</label>
                         <div className="relative">
                             <Tag size={16} className="absolute left-3 top-3 text-slate-400" />
                             <Input
-                                placeholder="Manufacturing, Tech, Retail..."
+                                placeholder="Industrie, Tech, Immobilier..."
                                 className="pl-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
                                 value={formData.industry}
                                 onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
@@ -105,11 +105,11 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
                     </div>
 
                     <div className="md:col-span-2 space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Address</label>
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Adresse</label>
                         <div className="relative">
                             <MapPin size={16} className="absolute left-3 top-3 text-slate-400" />
                             <Input
-                                placeholder="123 Business Blvd, Suite 100"
+                                placeholder="Numéro, rue, code postal, ville"
                                 className="pl-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
                                 value={formData.address}
                                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -118,9 +118,9 @@ export function NewClientModal({ isOpen, onClose }: NewClientModalProps) {
                     </div>
 
                     <div className="pt-4 flex gap-3">
-                        <Button type="button" variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
+                        <Button type="button" variant="ghost" className="flex-1" onClick={onClose}>Annuler</Button>
                         <Button type="submit" className="flex-1 bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
-                            Create Profile
+                            Créer le profil
                         </Button>
                     </div>
                 </form>

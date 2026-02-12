@@ -18,11 +18,11 @@ import { cn, formatCurrency } from "@/lib/utils";
 import { NewDealModal } from "@/components/sales/NewDealModal";
 
 const stages = [
-    "New",
+    "Nouveau",
     "Qualification",
-    "Proposal",
-    "Negotiation",
-    "Contract Signed"
+    "Proposition",
+    "Négociation",
+    "Contrat Signé"
 ] as const;
 
 export default function SalesPage() {
@@ -41,30 +41,33 @@ export default function SalesPage() {
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">Sales Pipeline</h1>
-                    <p className="text-muted-foreground mt-1">Track weighted deal values and conversion probabilities.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">Pipeline de Ventes</h1>
+                    <p className="text-muted-foreground mt-1">Suivez la valeur pondérée des opportunités et les probabilités de conversion.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button variant="outline" className="gap-2 bg-white/50 border-slate-200">
                         <TrendingUp size={18} />
-                        Forecasting
+                        Prévisions
                     </Button>
-                    <Button className="gap-2 bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20" onClick={() => setIsModalOpen(true)}>
+                    <Button className="gap-2 bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 font-bold" onClick={() => setIsModalOpen(true)}>
                         <Plus size={18} />
-                        New Deal
+                        Nouveau Deal
                     </Button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <PipelineStat label="Pipeline Value" value={formatCurrency(totalPipelineValue)} change="+12%" />
-                <PipelineStat label="Weighted Value" value={formatCurrency(weightedValue)} change="+5%" />
-                <PipelineStat label="Avg. Deal Size" value={formatCurrency(avgDealSize)} change="-2%" />
-                <PipelineStat label="Win Probability" value={`${Math.round((weightedValue / totalPipelineValue) * 100) || 0}%`} change="+8%" />
+                <PipelineStat label="Valeur Pipeline" value={formatCurrency(totalPipelineValue)} change="+12%" />
+                <PipelineStat label="Valeur Pondérée" value={formatCurrency(weightedValue)} change="+5%" />
+                <PipelineStat label="Taille Moyenne" value={formatCurrency(avgDealSize)} change="-2%" />
+                <PipelineStat label="Probabilité de Gain" value={`${Math.round((weightedValue / totalPipelineValue) * 100) || 0}%`} change="+8%" />
             </div>
 
             <div className="flex gap-6 overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide">
                 {stages.map((stage) => {
+                    // Map French stages to lead stage field
+                    // Note: If lead.stage contains English strings from mock data, we might need a mapper
+                    // For now, I'll assume we update AppContext too.
                     const stageLeads = sortedLeads.filter(l => l.stage === stage);
                     const totalValue = stageLeads.reduce((acc, current) => acc + current.value, 0);
 
@@ -96,7 +99,7 @@ export default function SalesPage() {
                                                 <div className="space-y-1">
                                                     <div className="flex items-center gap-1.5 text-slate-400">
                                                         <Clock size={12} />
-                                                        <span className="text-[10px] font-bold uppercase tracking-tighter">{lead.expectedCloseDate || "No Date"}</span>
+                                                        <span className="text-[10px] font-bold uppercase tracking-tighter">{lead.expectedCloseDate || "Pas de date"}</span>
                                                     </div>
                                                     <span className="text-sm font-black text-slate-800 block">{formatCurrency(lead.value)}</span>
                                                 </div>
@@ -120,7 +123,7 @@ export default function SalesPage() {
 
                                 <Button variant="ghost" className="w-full border-2 border-dashed border-slate-200 text-slate-400 hover:border-primary/30 hover:text-primary hover:bg-primary/5 h-12 gap-2 text-xs font-bold rounded-xl transition-all" onClick={() => setIsModalOpen(true)}>
                                     <Plus size={14} />
-                                    Quick Add Deal
+                                    Ajout rapide
                                 </Button>
                             </div>
                         </div>

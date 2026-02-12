@@ -1,4 +1,4 @@
-export type UserRole = "Admin" | "Sales" | "Construction" | "Project Manager" | "Direction" | "Legal" | "CAD";
+export type UserRole = "Admin" | "Ventes" | "Chef de projet" | "Direction" | "Légal" | "DAO" | "Sales" | "Construction" | "Project Manager" | "Legal" | "CAD" | "BO" | "Serv Tech";
 
 export interface User {
     id: string;
@@ -41,7 +41,7 @@ export interface SaleLead {
     id: string;
     title: string;
     value: number;
-    stage: "Prospect" | "Qualified" | "Negotiation" | "Contract Signed" | "Delivered";
+    stage: "Nouveau" | "Qualification" | "Proposition" | "Négociation" | "Contrat Signé" | "Perdu" | "Prospect" | "Qualifié" | "Livré" | "Qualified" | "Negotiation" | "Contract Signed" | "Delivered";
     probability: number;
     expectedClose: string;
     clientId: string;
@@ -51,7 +51,7 @@ export interface SaleLead {
 export interface Communication {
     id: string;
     clientId: string;
-    type: "Email" | "WhatsApp" | "Letter" | "Internal Note";
+    type: "Email" | "WhatsApp" | "Lettre" | "Note Interne" | "Letter" | "Internal Note";
     sender: string;
     recipient: string;
     subject?: string;
@@ -64,11 +64,25 @@ export interface Communication {
 export interface Document {
     id: string;
     name: string;
-    category: "Contract" | "Invoice" | "Permit" | "Plan" | "Letter";
+    category: "Contrat" | "Facture" | "Permis" | "Plan" | "Lettre" | "Contract" | "Invoice" | "Permit" | "Letter";
     version: string;
     uploadDate: string;
     size: string;
     type: string;
     clientId?: string;
     projectId?: string;
+}
+
+export interface Ticket {
+    id: string;
+    clientId: string;
+    clientName: string;
+    subject: string;
+    priority: "Low" | "Medium" | "High";
+    status: "Open" | "In Progress" | "Escalated" | "Closed";
+    department: "BO" | "Serv Tech";
+    assignedTo: string;
+    createdAt: string;
+    slaDeadline: string;
+    qualification?: string;
 }
