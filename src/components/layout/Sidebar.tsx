@@ -19,6 +19,9 @@ import {
     LogOut,
 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+import { useApp } from "@/context/AppContext";
+
 const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
     { icon: Users, label: "Clients & Leads", href: "/clients" },
@@ -37,41 +40,47 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
     const pathname = usePathname();
+    const router = useRouter();
+    const { logout } = useApp();
+
+    const handleLogout = () => {
+        logout();
+        router.push("/");
+    };
 
     return (
         <aside
             className={cn(
-                "fixed left-0 top-0 z-40 h-screen transition-all duration-300 ease-in-out border-r border-slate-100/50 bg-white/80 backdrop-blur-2xl flex flex-col shadow-[1px_0_20px_-10px_rgba(0,0,0,0.02)]",
+                "fixed left-0 top-0 z-40 h-screen transition-all duration-300 ease-in-out border-r border-slate-200/50 bg-white/70 backdrop-blur-md flex flex-col",
                 collapsed ? "w-20" : "w-72"
             )}
         >
-            <div className="flex h-20 items-center justify-between px-6 border-b border-slate-50 relative">
+            <div className="flex h-16 items-center justify-between px-6 border-b border-slate-100/50 relative">
                 {!collapsed && (
-                    <div className="flex items-center gap-3 animate-in fade-in zoom-in-95 duration-500">
-                        <div className="w-11 h-11 rounded-xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20 text-white font-serif font-black text-2xl italic tracking-tighter relative overflow-hidden group/logo">
-                            <span className="relative z-10">M</span>
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover/logo:translate-x-full transition-transform duration-700" />
+                    <div className="flex items-center gap-2.5 animate-in fade-in zoom-in-95 duration-500">
+                        <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white font-serif font-bold text-lg italic tracking-tighter">
+                            M
                         </div>
                         <div className="flex flex-col">
-                            <span className="font-black text-lg tracking-tighter leading-none text-slate-900 uppercase">MODERNYS</span>
-                            <span className="text-[0.6rem] tracking-[0.2em] text-primary font-black uppercase mt-1">Enterprise CRM</span>
+                            <span className="font-bold text-sm tracking-tight leading-none text-slate-900 uppercase">MODERNYS</span>
+                            <span className="text-[0.55rem] tracking-[0.1em] text-primary font-bold uppercase mt-0.5">Enterprise</span>
                         </div>
                     </div>
                 )}
                 <button
                     onClick={() => onCollapse(!collapsed)}
                     className={cn(
-                        "absolute -right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white border border-slate-100 shadow-md text-slate-400 hover:text-primary hover:border-primary/20 transition-all z-50 hover:scale-110",
+                        "absolute -right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white border border-slate-200 shadow-sm text-slate-400 hover:text-primary transition-all z-50",
                         collapsed && "right-1/2 translate-x-1/2"
                     )}
                 >
-                    {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                    {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
                 </button>
             </div>
 
-            <nav className="flex-1 overflow-y-auto mt-6 px-4 space-y-2 scrollbar-hide">
-                <div className="px-2 mb-4">
-                    {!collapsed && <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 opacity-60">Main Menu</p>}
+            <nav className="flex-1 overflow-y-auto mt-6 px-4 space-y-1 scrollbar-hide">
+                <div className="px-2 mb-3">
+                    {!collapsed && <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Main Menu</p>}
                 </div>
                 {menuItems.map((item) => {
                     const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -80,53 +89,49 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                "flex items-center gap-3 px-3.5 py-3 rounded-2xl transition-all group relative overflow-hidden",
+                                "flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all group relative",
                                 isActive
-                                    ? "bg-slate-900 text-white shadow-xl shadow-slate-900/20 font-bold"
-                                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-bold"
+                                    ? "bg-slate-900 text-white shadow-lg shadow-slate-900/10 font-semibold"
+                                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium"
                             )}
                         >
-                            {/* Shine effect for active item */}
-                            {isActive && (
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
-                            )}
-
-                            <item.icon size={20} className={cn("transition-all duration-300", isActive ? "text-primary scale-110" : "text-slate-400 group-hover:text-slate-900 group-hover:scale-110")} strokeWidth={isActive ? 2.5 : 2} />
+                            <item.icon size={18} className={cn("transition-all duration-300", isActive ? "text-primary" : "text-slate-400 group-hover:text-slate-900")} strokeWidth={isActive ? 2.5 : 2} />
 
                             {!collapsed && (
-                                <span className={cn("truncate animate-in slide-in-from-left-2 duration-300 relative z-10", isActive && "text-white")}>
+                                <span className="truncate text-xs animate-in slide-in-from-left-2 duration-300">
                                     {item.label}
                                 </span>
                             )}
 
                             {isActive && !collapsed && (
-                                <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_12px_rgba(59,130,246,0.8)] z-10"></div>
+                                <div className="ml-auto w-1 h-1 rounded-full bg-primary" />
                             )}
                         </Link>
                     );
                 })}
             </nav>
 
-            <div className="mt-auto border-t border-slate-50 p-4 space-y-2 pb-8">
+            <div className="mt-auto border-t border-slate-100/50 p-4 space-y-1 pb-6">
                 <div className="px-2 mb-2">
-                    {!collapsed && <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 opacity-60">System</p>}
+                    {!collapsed && <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">System</p>}
                 </div>
                 <Link
                     href="/settings"
                     className={cn(
-                        "flex items-center gap-3 px-4 py-2.5 rounded-2xl transition-all group relative overflow-hidden text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-bold"
+                        "flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium"
                     )}
                 >
-                    <Settings size={20} className="text-slate-400 group-hover:text-slate-900 transition-all group-hover:rotate-45" strokeWidth={2} />
-                    {!collapsed && <span className="animate-in slide-in-from-left-2 duration-300">Settings</span>}
+                    <Settings size={18} className="text-slate-400 group-hover:rotate-45 transition-transform" strokeWidth={2} />
+                    {!collapsed && <span className="text-xs">Settings</span>}
                 </Link>
                 <button
+                    onClick={handleLogout}
                     className={cn(
-                        "flex w-full items-center gap-3 px-4 py-2.5 rounded-2xl text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-all font-bold group"
+                        "flex w-full items-center gap-3 px-3.5 py-2.5 rounded-xl text-rose-500 hover:bg-rose-50 transition-all font-semibold group"
                     )}
                 >
-                    <LogOut size={20} className="group-hover:translate-x-1 transition-transform" strokeWidth={2} />
-                    {!collapsed && <span className="animate-in slide-in-from-left-2 duration-300">Logout</span>}
+                    <LogOut size={18} className="group-hover:translate-x-0.5 transition-transform" strokeWidth={2} />
+                    {!collapsed && <span className="text-xs">Sign Out</span>}
                 </button>
             </div>
         </aside>
