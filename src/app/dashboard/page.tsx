@@ -1,20 +1,26 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
     Users,
     Briefcase,
     TrendingUp,
     Activity,
-    BrainCircuit,
     ExternalLink,
     ChevronRight,
-    Plus
+    Plus,
+    CheckCircle2,
+    AlertCircle,
+    Clock,
+    Search,
+    Filter,
+    CalendarDays
 } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Input } from "@/components/ui/Input";
 import {
     AreaChart,
     Area,
@@ -27,7 +33,10 @@ import {
     Bar,
     Cell
 } from "recharts";
-import { mockProjects, mockSaleLeads, mockClients } from "@/lib/mock-data";
+import { useApp } from "@/context/AppContext";
+import { NewDealModal } from "@/components/sales/NewDealModal";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const revenueData = [
     { month: "Jan", revenue: 450000, target: 400000 },
@@ -38,251 +47,392 @@ const revenueData = [
     { month: "Jun", revenue: 720000, target: 500000 },
 ];
 
-const projectsData = [
-    { name: "Active", value: 12, color: "var(--primary)" },
-    { name: "Delayed", value: 4, color: "#f59e0b" },
-    { name: "Review", value: 6, color: "#10b981" },
-    { name: "On Hold", value: 2, color: "#64748b" },
-];
-
 export default function DashboardPage() {
+    const { stats, leads, projects } = useApp();
+    const [isDealModalOpen, setIsDealModalOpen] = useState(false);
+
+    // Calculate dynamic distribution
+    const projectStats = {
+        inProgress: projects.filter(p => p.status === "In Progress").length,
+        delayed: projects.filter(p => p.status === "Delayed").length,
+        planning: projects.filter(p => p.status === "Planning").length,
+        completed: projects.filter(p => p.status === "Completed").length,
+    };
+
+    const projectsDistributionData = [
+        { name: "In Progress", value: projectStats.inProgress, color: "hsl(var(--primary))" },
+        { name: "Planning", value: projectStats.planning, color: "#94a3b8" },
+        { name: "Delayed", value: projectStats.delayed, color: "#f43f5e" },
+        { name: "Completed", value: projectStats.completed, color: "#10b981" },
+    ];
+
+    // Take top 5 recent leads
+    const recentLeads = [...leads].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5);
+
+    const handleExport = () => {
+        alert("Preparing executive brief... Report will be available in the Documents section.");
+    };
+
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
-            <div className="flex justify-between items-end">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Executive Dashboard</h1>
-                    <p className="text-muted-foreground mt-1">Global performance and strategic insights.</p>
-                </div>
-                <div className="flex gap-3">
-                    <Button variant="outline" size="sm">
-                        <ExternalLink size={16} className="mr-2" />
-                        Export Report
-                    </Button>
-                    <Button size="sm">
-                        <Plus size={16} className="mr-2" />
-                        New Strategic Entry
-                    </Button>
-                </div>
-            </div>
+        <div className="relative min-h-[calc(100vh-5rem)]">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-grid-pattern opacity-[0.4] pointer-events-none" />
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatsCard
-                    title="Total Revenue"
-                    value="$3.4M"
-                    change={12.5}
-                    trend="up"
-                    icon={TrendingUp}
-                    description="Total revenue generated this fiscal year"
-                />
-                <StatsCard
-                    title="Active Projects"
-                    value="24"
-                    change={8.2}
-                    trend="up"
-                    icon={Briefcase}
-                    description="Projects currently in progress"
-                />
-                <StatsCard
-                    title="Client Growth"
-                    value="156"
-                    change={4.1}
-                    trend="up"
-                    icon={Users}
-                    description="New clients added this quarter"
-                />
-                <StatsCard
-                    title="Avg. Efficiency"
-                    value="92%"
-                    change={2.4}
-                    trend="down"
-                    icon={Activity}
-                    description="Operational output vs target"
-                />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Revenue Chart */}
-                <Card className="lg:col-span-2 border-none shadow-md">
-                    <CardHeader>
-                        <CardTitle>Revenue Forecast vs Target</CardTitle>
-                        <CardDescription>Monthly comparison of actual revenue against set targets.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[350px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={revenueData}>
-                                <defs>
-                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
-                                <YAxis
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fill: '#64748b', fontSize: 12 }}
-                                    tickFormatter={(value) => `$${value / 1000}k`}
-                                />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                    formatter={(value: number) => [`$${value.toLocaleString()}`, 'Amount']}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="revenue"
-                                    stroke="hsl(var(--primary))"
-                                    strokeWidth={3}
-                                    fillOpacity={1}
-                                    fill="url(#colorRevenue)"
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="target"
-                                    stroke="#cbd5e1"
-                                    strokeWidth={2}
-                                    strokeDasharray="5 5"
-                                    fill="none"
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
-
-                {/* AI Insights Card */}
-                <Card className="border-none shadow-lg bg-slate-900 text-white relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-                        <BrainCircuit size={120} />
+            <div className="relative animate-in fade-in duration-700 space-y-10">
+                {/* Ultra Premium Header */}
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 pb-4">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-1 bg-primary rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+                            <motion.h1
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 leading-tight"
+                            >
+                                Executive <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">Overview</span>
+                            </motion.h1>
+                        </div>
+                        <p className="text-slate-500 text-lg font-medium opacity-70 flex items-center gap-2">
+                            <CalendarDays size={20} className="text-slate-400" />
+                            Fiscal Year 2024 • Global Performance
+                        </p>
                     </div>
-                    <CardHeader>
-                        <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="secondary" className="bg-primary/20 text-primary-foreground border-none">
-                                AI INSIGHTS
-                            </Badge>
-                            <span className="text-[10px] uppercase font-bold tracking-widest opacity-50">Simulation</span>
-                        </div>
-                        <CardTitle className="text-white">Smart Recommendations</CardTitle>
-                        <CardDescription className="text-slate-400">AI-generated analysis of your current business state.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-emerald-400">
-                                <TrendingUp size={16} />
-                                <span className="text-sm font-semibold">Growth Opportunity</span>
-                            </div>
-                            <p className="text-xs text-slate-300">
-                                Manufacturing sector shows 15% higher conversion. Focus Q3 expansion efforts in this industry.
-                            </p>
-                        </div>
 
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-amber-400">
-                                <Activity size={16} />
-                                <span className="text-sm font-semibold">Risk Detected</span>
-                            </div>
-                            <p className="text-xs text-slate-300">
-                                "Bridgeport Commercial" project has a 20% probability of delay due to technical validation backlog.
-                            </p>
-                        </div>
-
-                        <Button className="w-full bg-primary hover:bg-primary/90 text-white border-none mt-4">
-                            Detailed AI Audit
-                            <ChevronRight size={16} className="ml-2" />
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="h-12 w-[1px] bg-slate-200/60 mx-2 hidden xl:block" />
+                        <Button
+                            variant="outline"
+                            className="h-12 w-12 p-0 rounded-2xl bg-white/80 backdrop-blur border-slate-200 text-slate-400 hover:text-primary hover:border-primary/20 shadow-sm"
+                        >
+                            <Filter size={18} />
                         </Button>
-                    </CardContent>
-                </Card>
-            </div>
+                        <Button
+                            onClick={handleExport}
+                            variant="outline"
+                            className="bg-white/80 backdrop-blur border-slate-200 text-slate-600 hover:text-primary hover:border-primary/20 shadow-sm h-12 px-6 font-bold rounded-2xl transition-all"
+                        >
+                            <ExternalLink size={18} className="mr-2" />
+                            Report
+                        </Button>
+                        <Button
+                            onClick={() => setIsDealModalOpen(true)}
+                            className="bg-slate-900 hover:bg-slate-800 text-white font-black shadow-2xl shadow-slate-900/10 h-12 px-6 rounded-2xl transition-all group"
+                        >
+                            <Plus size={18} className="mr-2 group-hover:rotate-90 transition-transform" />
+                            Capture Deal
+                        </Button>
+                    </div>
+                </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Recent Activity Table */}
-                <Card className="lg:col-span-2 border-none shadow-md">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
-                            <CardTitle>Recent Sales Activity</CardTitle>
-                            <CardDescription>Track the latest movements in your sales pipeline.</CardDescription>
-                        </div>
-                        <Button variant="ghost" size="sm">View All</Button>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="overflow-x-auto">
-                            <table className="w-full border-collapse">
-                                <thead>
-                                    <tr className="border-b text-left text-xs text-muted-foreground uppercase tracking-wider">
-                                        <th className="py-4 font-medium">Deal Plan</th>
-                                        <th className="py-4 font-medium">Client</th>
-                                        <th className="py-4 font-medium">Value</th>
-                                        <th className="py-4 font-medium">Stage</th>
-                                        <th className="py-4 font-medium text-right">Probability</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y">
-                                    {mockSaleLeads.map((lead) => (
-                                        <tr key={lead.id} className="group hover:bg-slate-50/50 transition-colors">
-                                            <td className="py-4">
-                                                <span className="font-semibold text-sm">{lead.title}</span>
-                                            </td>
-                                            <td className="py-4 text-sm text-muted-foreground">{lead.clientName}</td>
-                                            <td className="py-4 text-sm font-medium">${lead.value.toLocaleString()}</td>
-                                            <td className="py-4">
-                                                <Badge variant={lead.stage === "Contract Signed" ? "success" : "secondary"}>
-                                                    {lead.stage}
-                                                </Badge>
-                                            </td>
-                                            <td className="py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2 text-sm font-medium">
-                                                    <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                        <div
-                                                            className="h-full bg-primary"
-                                                            style={{ width: `${lead.probability}%` }}
-                                                        ></div>
-                                                    </div>
-                                                    {lead.probability}%
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </CardContent>
-                </Card>
+                {/* Main Grid System */}
+                <div className="grid grid-cols-12 gap-8">
 
-                {/* Project Health */}
-                <Card className="border-none shadow-md">
-                    <CardHeader>
-                        <CardTitle>Projects Distribution</CardTitle>
-                        <CardDescription>Current projects status across all sectors.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={projectsData} layout="vertical" margin={{ left: -20, right: 20 }}>
-                                <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 500 }} />
-                                <Tooltip
-                                    cursor={{ fill: 'transparent' }}
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                />
-                                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
-                                    {projectsData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                        <div className="mt-4 grid grid-cols-2 gap-4">
-                            <div className="p-4 rounded-xl bg-slate-50 border flex flex-col items-center">
-                                <span className="text-2xl font-bold">18</span>
-                                <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">On Schedule</span>
-                            </div>
-                            <div className="p-4 rounded-xl bg-rose-50 border border-rose-100 flex flex-col items-center">
-                                <span className="text-2xl font-bold text-rose-600">4</span>
-                                <span className="text-[10px] text-rose-500 uppercase tracking-wider font-bold">Delayed</span>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                    {/* Stats Section - Top Row Full Width */}
+                    <div className="col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+                        <StatsCard
+                            title="Gross Revenue"
+                            value={`$${(stats.totalRevenue / 1000000).toFixed(1)}M`}
+                            change={12.5}
+                            trend="up"
+                            icon={TrendingUp}
+                            description="validated revenue • Q3 target"
+                        />
+                        <StatsCard
+                            title="Pipeline Load"
+                            value={stats.activeProjects.toString()}
+                            change={8.2}
+                            trend="up"
+                            icon={Briefcase}
+                            description="current operational cap."
+                        />
+                        <StatsCard
+                            title="Client Base"
+                            value={stats.clientCount.toString()}
+                            change={4.1}
+                            trend="up"
+                            icon={Users}
+                            description="new account activations"
+                        />
+                        <StatsCard
+                            title="Lead Velocity"
+                            value="92%"
+                            change={2.4}
+                            trend="down"
+                            icon={Activity}
+                            description="conversion vs Q2 target"
+                        />
+                    </div>
+
+                    {/* Middle Row: Revenue Chart & Project Health */}
+                    <div className="col-span-12 xl:col-span-8">
+                        <Card className="card-premium overflow-hidden h-full">
+                            <CardHeader className="border-b border-slate-50/50 pb-8 p-8">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                            <CardTitle className="text-2xl font-black text-slate-900">Revenue Trajectory</CardTitle>
+                                        </div>
+                                        <CardDescription className="mt-1 font-bold text-slate-400">Monthly breakdown of closed deals vs corporate targets.</CardDescription>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Badge variant="secondary" className="bg-slate-100/50 text-slate-500 border-none font-black px-3 py-1">2024</Badge>
+                                        <Badge className="bg-primary/5 text-primary border-none font-black px-3 py-1 ring-1 ring-primary/20">TARGET: 105%</Badge>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="h-[400px] p-8 pt-12">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={revenueData}>
+                                        <defs>
+                                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
+                                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                        <XAxis
+                                            dataKey="month"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 800 }}
+                                            dy={15}
+                                        />
+                                        <YAxis
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 800 }}
+                                            tickFormatter={(value) => `$${value / 1000}k`}
+                                            dx={-15}
+                                        />
+                                        <Tooltip
+                                            cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
+                                            contentStyle={{
+                                                borderRadius: '1.25rem',
+                                                border: 'none',
+                                                boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+                                                padding: '16px',
+                                                background: 'rgba(255, 255, 255, 0.98)',
+                                            }}
+                                            formatter={(value: number) => [`$${value.toLocaleString()}`, 'Amount']}
+                                            labelStyle={{ color: '#0f172a', marginBottom: '8px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '10px' }}
+                                        />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="revenue"
+                                            stroke="hsl(var(--primary))"
+                                            strokeWidth={4}
+                                            fillOpacity={1}
+                                            fill="url(#colorRevenue)"
+                                            activeDot={{ r: 8, strokeWidth: 0, fill: 'hsl(var(--primary))' }}
+                                            animationDuration={2000}
+                                        />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="target"
+                                            stroke="#cbd5e1"
+                                            strokeWidth={2}
+                                            strokeDasharray="6 6"
+                                            fill="none"
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <div className="col-span-12 xl:col-span-4">
+                        <Card className="card-premium h-full flex flex-col pt-2">
+                            <CardHeader className="border-b border-slate-50/50 p-8">
+                                <CardTitle className="text-2xl font-black text-slate-900">Project Integrity</CardTitle>
+                                <CardDescription className="mt-1 font-bold text-slate-400">Distribution of active construction phases.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-8 flex-1 flex flex-col justify-between pt-10">
+                                <div className="h-[200px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart
+                                            data={projectsDistributionData}
+                                            layout="vertical"
+                                            margin={{ left: -10, right: 30, top: 0, bottom: 0 }}
+                                            barSize={20}
+                                        >
+                                            <XAxis type="number" hide />
+                                            <YAxis
+                                                dataKey="name"
+                                                type="category"
+                                                axisLine={false}
+                                                tickLine={false}
+                                                tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
+                                                width={100}
+                                            />
+                                            <Tooltip
+                                                cursor={{ fill: 'rgba(0,0,0,0.02)', radius: 8 }}
+                                                contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                                            />
+                                            <Bar dataKey="value" radius={[0, 8, 8, 0]} animationDuration={1800}>
+                                                {projectsDistributionData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 mt-8">
+                                    <div className="p-6 rounded-3xl bg-emerald-50/30 border border-emerald-100 flex flex-col items-center group/stat hover:bg-white hover:shadow-xl hover:shadow-emerald-100/50 transition-all cursor-default">
+                                        <CheckCircle2 className="text-emerald-500 mb-2 group-hover/stat:scale-110 transition-transform" size={18} />
+                                        <span className="text-4xl font-black text-slate-900 leading-none">{projectStats.inProgress + projectStats.completed}</span>
+                                        <span className="text-[9px] text-emerald-600 uppercase tracking-[0.2em] font-black mt-3">VALIDATED</span>
+                                    </div>
+                                    <div className="p-6 rounded-3xl bg-rose-50/30 border border-rose-100 flex flex-col items-center group/stat hover:bg-white hover:shadow-xl hover:shadow-rose-100/50 transition-all cursor-default">
+                                        <AlertCircle className="text-rose-500 mb-2 group-hover/stat:scale-110 transition-transform" size={18} />
+                                        <span className="text-4xl font-black text-rose-500 leading-none">{projectStats.delayed}</span>
+                                        <span className="text-[9px] text-rose-600 uppercase tracking-[0.2em] font-black mt-3">AT RISK</span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Bottom Row: Active Deals Table & AI Insights */}
+                    <div className="col-span-12 xl:col-span-8">
+                        <Card className="card-premium">
+                            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50/50 p-8">
+                                <div>
+                                    <CardTitle className="text-2xl font-black text-slate-900">Active Deals</CardTitle>
+                                    <CardDescription className="mt-1 font-bold text-slate-400">Proprietary scoring and stage tracking.</CardDescription>
+                                </div>
+                                <Button variant="ghost" size="sm" className="text-primary hover:text-primary/10 hover:bg-primary/5 font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl">
+                                    Pipeline Map <ChevronRight size={14} className="ml-1" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="overflow-x-auto overflow-y-hidden">
+                                    <table className="w-full border-collapse">
+                                        <thead>
+                                            <tr className="border-b border-slate-50 text-left text-[11px] text-slate-300 uppercase tracking-[0.2em] font-black">
+                                                <th className="p-8 pb-5 font-black">Designation</th>
+                                                <th className="py-8 pb-5 font-black">Entity</th>
+                                                <th className="py-8 pb-5 font-black">Valuation</th>
+                                                <th className="py-8 pb-5 font-black">Stage</th>
+                                                <th className="p-8 pb-5 font-black text-right">Success Score</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-50/50">
+                                            {recentLeads.map((lead, idx) => (
+                                                <motion.tr
+                                                    key={lead.id}
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    transition={{ delay: idx * 0.05 }}
+                                                    className="group hover:bg-slate-50/30 transition-colors cursor-pointer"
+                                                >
+                                                    <td className="p-8 py-5">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 rounded-xl bg-slate-50/50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-primary/5 group-hover:border-primary/20 transition-all duration-300 shadow-sm">
+                                                                <Briefcase size={18} />
+                                                            </div>
+                                                            <span className="font-bold text-sm text-slate-800 group-hover:text-primary transition-colors">{lead.title}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-5 text-sm text-slate-500 font-bold">{lead.clientName}</td>
+                                                    <td className="py-5 text-sm font-black text-slate-900">${lead.value.toLocaleString()}</td>
+                                                    <td className="py-5">
+                                                        <Badge
+                                                            variant={lead.stage === "Contract Signed" ? "success" : "secondary"}
+                                                            className="font-black text-[9px] uppercase tracking-[0.15em] bg-white border border-slate-100 shadow-sm px-3 py-1.5 rounded-lg"
+                                                        >
+                                                            {lead.stage}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="p-8 py-5 text-right">
+                                                        <div className="flex items-center justify-end gap-4 text-sm font-black text-slate-900">
+                                                            <div className="w-28 h-1.5 bg-slate-100 rounded-full overflow-hidden shadow-inner hidden md:block">
+                                                                <motion.div
+                                                                    initial={{ width: 0 }}
+                                                                    animate={{ width: `${lead.probability}%` }}
+                                                                    transition={{ duration: 1.5, delay: 0.8 + idx * 0.1 }}
+                                                                    className={cn(
+                                                                        "h-full rounded-full shadow-[0_0_10px_rgba(59,130,246,0.3)]",
+                                                                        lead.probability > 70 ? "bg-emerald-500" : lead.probability > 40 ? "bg-primary" : "bg-slate-400"
+                                                                    )}
+                                                                ></motion.div>
+                                                            </div>
+                                                            <span className="min-w-[40px]">{lead.probability}%</span>
+                                                        </div>
+                                                    </td>
+                                                </motion.tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <div className="col-span-12 xl:col-span-4">
+                        <Card className="card-premium !bg-slate-900 !border-slate-800 text-white relative overflow-hidden group h-full">
+                            {/* High-End AI Glow Effect */}
+                            <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-primary/10 rounded-full blur-[140px] -mr-48 -mt-48 transition-transform duration-[2000ms] group-hover:scale-125" />
+                            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-500/5 rounded-full blur-[100px] -ml-24 -mb-24" />
+
+                            <CardHeader className="relative z-10 pb-10 border-b border-white/5 p-8">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="h-2 w-2 rounded-full bg-primary animate-ping shadow-[0_0_15px_rgba(59,130,246,1)]"></div>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">QUANTUM ANALYTICS CORE</span>
+                                </div>
+                                <CardTitle className="text-white text-3xl font-black leading-tight italic tracking-tighter">Strategic<br />Intelligence</CardTitle>
+                                <CardDescription className="text-slate-500 font-bold mt-2">Predictive modeling for pipeline acceleration.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6 pt-10 p-8 relative z-10">
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="space-y-4 p-6 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white/[0.08] transition-all cursor-default backdrop-blur-sm"
+                                >
+                                    <div className="flex items-center gap-3 text-emerald-400">
+                                        <div className="p-2 rounded-xl bg-emerald-500/10">
+                                            <TrendingUp size={18} strokeWidth={2.5} />
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Opportunity Detected</span>
+                                    </div>
+                                    <p className="text-[11px] text-slate-300 leading-relaxed font-bold opacity-80">
+                                        Manufacturing sector shows <span className="text-white underline decoration-emerald-500/50 underline-offset-4 decoration-2">15% higher velocity</span>. Priority target: Q3 expansions in this vertical.
+                                    </p>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.4 }}
+                                    className="space-y-4 p-6 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white/[0.08] transition-all cursor-default backdrop-blur-sm"
+                                >
+                                    <div className="flex items-center gap-3 text-amber-400">
+                                        <div className="p-2 rounded-xl bg-amber-500/10">
+                                            <Clock size={18} strokeWidth={2.5} />
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Resource Forecast</span>
+                                    </div>
+                                    <p className="text-[11px] text-slate-300 leading-relaxed font-bold opacity-80">
+                                        Technical validation backlog detected. Recommended: Allocation of <span className="text-white underline decoration-amber-500/50 underline-offset-4 decoration-2">2 additional CAD resources</span> to project-482.
+                                    </p>
+                                </motion.div>
+
+                                <div className="pt-2">
+                                    <Button className="w-full bg-white text-slate-900 hover:bg-slate-100 font-black border-none h-14 shadow-2xl rounded-2xl transition-all flex items-center justify-center gap-2 group/btn">
+                                        Strategic Audit
+                                        <ChevronRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
+                                    </Button>
+                                    <p className="text-center text-slate-600 text-[10px] font-bold mt-4 uppercase tracking-widest opacity-60">Last update: 2 minutes ago</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                </div>
+
+                <NewDealModal isOpen={isDealModalOpen} onClose={() => setIsDealModalOpen(false)} />
             </div>
-        </div>
-    );
+        </div>);
 }
