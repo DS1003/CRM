@@ -73,16 +73,41 @@ export interface Document {
     projectId?: string;
 }
 
+export type TicketStatus = "Open" | "Assigned" | "In Progress" | "Waiting Client" | "Escalated" | "Resolved" | "Closed" | "Archived";
+export type TicketPriority = "Low" | "Medium" | "High";
+export type TicketType = "Complaint" | "Technical" | "NC" | "Document" | "Payment";
+export type TicketChannel = "Email" | "WhatsApp" | "Phone" | "BO";
+
+export interface TicketTimelineEvent {
+    id: string;
+    type: "status_change" | "note" | "communication" | "escalation";
+    content: string;
+    author: string;
+    timestamp: string;
+    statusFrom?: TicketStatus;
+    statusTo?: TicketStatus;
+}
+
 export interface Ticket {
     id: string;
     clientId: string;
     clientName: string;
     subject: string;
-    priority: "Low" | "Medium" | "High";
-    status: "Open" | "In Progress" | "Escalated" | "Closed";
+    description: string;
+    priority: TicketPriority;
+    status: TicketStatus;
+    type: TicketType;
+    channel: TicketChannel;
     department: "BO" | "Serv Tech";
     assignedTo: string;
     createdAt: string;
     slaDeadline: string;
     qualification?: string;
+    internalNotes: string[];
+    timeline: TicketTimelineEvent[];
+    resolutionSummary?: string;
+    resolutionAction?: string;
+    satisfaction?: boolean;
+    finalComment?: string;
+    isArchived: boolean;
 }

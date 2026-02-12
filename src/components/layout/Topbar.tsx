@@ -140,10 +140,10 @@ export function Topbar() {
                                         <div className="space-y-4 p-2">
                                             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Actions Rapides</div>
                                             <div className="grid grid-cols-2 gap-2">
-                                                <QuickAction icon={TrendingUp} label="Module Ventes" shortcut="S" onClick={() => { router.push("/sales"); updateRole("Ventes"); setIsSearchOpen(false); }} />
-                                                <QuickAction icon={Briefcase} label="Module Projets" shortcut="P" onClick={() => { router.push("/construction"); updateRole("Chef de projet"); setIsSearchOpen(false); }} />
-                                                <QuickAction icon={Layout} label="Tableau de bord" shortcut="D" onClick={() => { router.push("/dashboard"); setIsSearchOpen(false); }} />
-                                                <QuickAction icon={BarChart3} label="Rapports & IA" shortcut="R" onClick={() => { router.push("/reporting"); setIsSearchOpen(false); }} />
+                                                <QuickAction icon={TrendingUp} label="Ventes" shortcut="S" onClick={() => { router.push("/sales"); updateRole("Ventes"); setIsSearchOpen(false); }} />
+                                                <QuickAction icon={Briefcase} label="Projets" shortcut="P" onClick={() => { router.push("/construction"); updateRole("Chef de projet"); setIsSearchOpen(false); }} />
+                                                <QuickAction icon={Layout} label="Tableau" shortcut="D" onClick={() => { router.push("/dashboard"); setIsSearchOpen(false); }} />
+                                                <QuickAction icon={BarChart3} label="IA" shortcut="R" onClick={() => { router.push("/reporting"); setIsSearchOpen(false); }} />
                                             </div>
                                         </div>
                                     ) : searchQuery.length > 1 && filteredResults.length > 0 ? (
@@ -158,14 +158,14 @@ export function Topbar() {
                                                     }}
                                                     className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all text-left group"
                                                 >
-                                                    <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-primary/5 transition-colors">
+                                                    <div className="w-10 h-10 rounded-lg bg-slate-50/50 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-primary/5 transition-colors">
                                                         {res.type === 'Client' && <Building size={18} />}
                                                         {res.type === 'Projet' && <Briefcase size={18} />}
                                                         {res.type === 'Opportunité' && <TrendingUp size={18} />}
                                                         {res.type === 'Ticket' && <MessageSquare size={18} />}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-bold text-slate-900 truncate">{(res.name || res.title || res.subject)}</p>
+                                                        <p className="text-sm font-semibold text-slate-900 truncate">{(res.name || res.title || res.subject)}</p>
                                                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{res.type}</p>
                                                     </div>
                                                     <ArrowUpRight size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-all mr-2" />
@@ -176,7 +176,7 @@ export function Topbar() {
                                         <div className="p-12 text-center text-slate-400 space-y-3">
                                             <Search size={40} className="mx-auto opacity-10" />
                                             <div className="space-y-1">
-                                                <p className="text-sm font-bold text-slate-500 italic">Aucun résultat pour "{searchQuery}"</p>
+                                                <p className="text-sm font-semibold text-slate-500 italic">Aucun résultat pour "{searchQuery}"</p>
                                                 <p className="text-[10px] font-medium uppercase tracking-widest text-slate-400">Essayez de rechercher un client ou un projet</p>
                                             </div>
                                         </div>

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { mockClients, mockSaleLeads, mockProjects, mockTickets } from "@/lib/mock-data";
-import { Ticket } from "@/types";
+import { Ticket, TicketStatus, TicketPriority, TicketType, TicketChannel, TicketTimelineEvent } from "@/types";
 
 // Define Types
 export interface Client {
@@ -28,10 +28,6 @@ export interface SaleLead {
     probability: number;
     expectedCloseDate: string;
 }
-
-export type TicketStatus = "Open" | "In Progress" | "Escalated" | "Closed";
-export type TicketPriority = "Low" | "Medium" | "High";
-export type TicketDepartment = "BO" | "Serv Tech";
 
 export interface Project {
     id: string;
@@ -88,7 +84,7 @@ interface AppContextType {
         leadCount: number;
     };
     tickets: Ticket[];
-    addTicket: (ticket: Omit<Ticket, "id">) => void;
+    addTicket: (ticket: Omit<Ticket, "id" | "timeline" | "internalNotes" | "isArchived">) => void;
     updateTicket: (id: string, updates: Partial<Ticket>) => void;
     simulateEscalation: () => void;
     triggerAutomatedTicket: (event: {
@@ -118,6 +114,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const savedUser = localStorage.getItem("modernys_user");
         if (savedUser) {
             setUser(JSON.parse(savedUser));
+        } else {
+            // Default user
+            const defaultUser: User = {
+                id: "AFK1",
+                name: "Astou Fall Kane",
+                email: "astou@nexcare.sn",
+                role: "Admin",
+                avatar: "AF"
+            };
+            setUser(defaultUser);
+            localStorage.setItem("modernys_user", JSON.stringify(defaultUser));
         }
 
         // Hydrate mock data
@@ -137,11 +144,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const login = (email: string, role: string) => {
         const newUser: User = {
-            id: "1",
-            name: "Alex Rivera",
+            id: "AFK1",
+            name: "Astou Fall Kane",
             email,
             role: role.charAt(0).toUpperCase() + role.slice(1),
-            avatar: "AR"
+            avatar: "AF"
         };
         setUser(newUser);
         localStorage.setItem("modernys_user", JSON.stringify(newUser));
@@ -218,9 +225,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }, ...prev]);
     };
 
-    const addTicket = (newTicket: Omit<Ticket, "id">) => {
-        const ticket = { ...newTicket, id: `T-${Math.floor(Math.random() * 900) + 100}` };
-        setTickets((prev) => [ticket as Ticket, ...prev]);
+    const addTicket = (newTicket: Omit<Ticket, "id" | "timeline" | "internalNotes" | "isArchived">) => {
+        const ticketId = `T-${Math.floor(Math.random() * 900) + 100}`;
+        const ticket: Ticket = {
+            ...newTicket,
+            id: ticketId,
+            timeline: [
+                {
+                    id: Math.random().toString(36).substr(2, 9),
+                    type: "status_change",
+                    content: "Nouveau ticket créé dans le système",
+                    author: user?.name || "Système",
+                    timestamp: new Date().toISOString(),
+                    statusTo: "Open"
+                }
+            ],
+            internalNotes: [],
+            isArchived: false
+        };
+        setTickets((prev) => [ticket, ...prev]);
         setNotifications(prev => [{
             id: Math.random().toString(36).substr(2, 9),
             title: "Nouveau Ticket Créé",
@@ -232,14 +255,57 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     const updateTicket = (id: string, updates: Partial<Ticket>) => {
-        setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+        setTickets((prev) => prev.map((t) => {
+            if (t.id === id) {
+                const newTimeline = [...t.timeline];
+
+                // Track status changes in timeline
+                if (updates.status && updates.status !== t.status) {
+                    newTimeline.push({
+                        id: Math.random().toString(36).substr(2, 9),
+                        type: "status_change",
+                        content: `Statut passé de ${t.status} à ${updates.status}`,
+                        author: user?.name || "Système",
+                        timestamp: new Date().toISOString(),
+                        statusFrom: t.status,
+                        statusTo: updates.status
+                    });
+                }
+
+                // Track internal notes in timeline
+                if (updates.internalNotes && updates.internalNotes.length > (t.internalNotes?.length || 0)) {
+                    const newNote = updates.internalNotes[updates.internalNotes.length - 1];
+                    newTimeline.push({
+                        id: Math.random().toString(36).substr(2, 9),
+                        type: "note",
+                        content: newNote,
+                        author: user?.name || "Conseiller",
+                        timestamp: new Date().toISOString()
+                    });
+                }
+
+                return { ...t, ...updates, timeline: newTimeline };
+            }
+            return t;
+        }));
     };
 
     const simulateEscalation = () => {
         setTickets((prev) => prev.map((t) => {
             const isOverdue = new Date(t.slaDeadline) < new Date();
-            if (isOverdue && t.status !== "Closed" && t.status !== "Escalated") {
-                return { ...t, status: "Escalated" as const };
+            const protectStatuses: TicketStatus[] = ["Closed", "Resolved", "Archived", "Escalated"];
+            if (isOverdue && !protectStatuses.includes(t.status)) {
+                // Add escalation to timeline
+                const newTimeline: TicketTimelineEvent[] = [...t.timeline, {
+                    id: Math.random().toString(36).substr(2, 9),
+                    type: "escalation",
+                    content: "Délai de traitement (SLA) dépassé. Ticket escaladé automatiquement.",
+                    author: "Système IA",
+                    timestamp: new Date().toISOString(),
+                    statusFrom: t.status,
+                    statusTo: "Escalated"
+                }];
+                return { ...t, status: "Escalated" as TicketStatus, timeline: newTimeline };
             }
             return t;
         }));
@@ -251,20 +317,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         clientName: string;
         details?: string;
     }) => {
-        const priorityMap = {
-            NC: "High" as const,
-            Reclamation: "High" as const,
-            Tech: "Medium" as const,
-            DocRequest: "Low" as const,
-            MailBO: "Low" as const,
+        const priorityMap: Record<string, TicketPriority> = {
+            NC: "High",
+            Reclamation: "High",
+            Tech: "Medium",
+            DocRequest: "Low",
+            MailBO: "Low",
         };
 
-        const deptMap = {
-            NC: "BO" as const,
-            Reclamation: "BO" as const,
-            Tech: "Serv Tech" as const,
-            DocRequest: "BO" as const,
-            MailBO: "BO" as const,
+        const typeMap: Record<string, TicketType> = {
+            NC: "NC",
+            Reclamation: "Complaint",
+            Tech: "Technical",
+            DocRequest: "Document",
+            MailBO: "Technical",
+        };
+
+        const channelMap: Record<string, TicketChannel> = {
+            NC: "BO",
+            Reclamation: "Email",
+            Tech: "Phone",
+            DocRequest: "BO",
+            MailBO: "BO",
+        };
+
+        const deptMap: Record<string, "BO" | "Serv Tech"> = {
+            NC: "BO",
+            Reclamation: "BO",
+            Tech: "Serv Tech",
+            DocRequest: "BO",
+            MailBO: "BO",
         };
 
         const subjectMap = {
@@ -282,13 +364,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             clientId: event.clientId,
             clientName: event.clientName,
             subject: subjectMap[event.type],
+            description: event.details || "Alerte générée automatiquement par le système NexAI.",
             priority: priorityMap[event.type],
             status: "Open",
+            type: typeMap[event.type],
+            channel: channelMap[event.type],
             department: deptMap[event.type],
-            assignedTo: deptMap[event.type] === "BO" ? "Admin" : "Chef de projet",
+            assignedTo: deptMap[event.type] === "BO" ? "Gestionnaire BO" : "Support Technique",
             createdAt: new Date().toISOString(),
             slaDeadline: deadline,
-            qualification: event.type
+            qualification: event.type,
+            resolutionSummary: "",
+            resolutionAction: "",
+            satisfaction: undefined,
+            finalComment: ""
         });
     };
 
