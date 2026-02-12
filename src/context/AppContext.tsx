@@ -111,7 +111,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         // Hydrate auth state
-        const savedUser = localStorage.getItem("modernys_user");
+        const savedUser = localStorage.getItem("nexcare_user");
         if (savedUser) {
             setUser(JSON.parse(savedUser));
         } else {
@@ -124,7 +124,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 avatar: "AF"
             };
             setUser(defaultUser);
-            localStorage.setItem("modernys_user", JSON.stringify(defaultUser));
+            localStorage.setItem("nexcare_user", JSON.stringify(defaultUser));
         }
 
         // Hydrate mock data
@@ -151,12 +151,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             avatar: "AF"
         };
         setUser(newUser);
-        localStorage.setItem("modernys_user", JSON.stringify(newUser));
+        localStorage.setItem("nexcare_user", JSON.stringify(newUser));
     };
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem("modernys_user");
+        localStorage.removeItem("nexcare_user");
     };
 
     const markNotificationAsRead = (id: string) => {
@@ -171,7 +171,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (user) {
             const updatedUser = { ...user, role };
             setUser(updatedUser);
-            localStorage.setItem("modernys_user", JSON.stringify(updatedUser));
+            localStorage.setItem("nexcare_user", JSON.stringify(updatedUser));
         }
     };
 
