@@ -20,8 +20,10 @@ import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { mockCommunications } from "@/lib/mock-data";
 import { cn, formatDate } from "@/lib/utils";
+import { useApp } from "@/context/AppContext";
 
 export default function CommunicationPage() {
+    const { triggerAutomatedTicket } = useApp();
     const [activeTab, setActiveTab] = React.useState<"All" | "Email" | "WhatsApp" | "Note Interne">("All");
 
     const filteredComms = activeTab === "All"
@@ -107,6 +109,26 @@ export default function CommunicationPage() {
                             </Button>
                         </CardContent>
                     </Card>
+
+                    <Card className="card-premium border-dashed border-slate-200 bg-slate-50/50">
+                        <CardContent className="p-4 space-y-3">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Simulations SAV</span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full h-10 text-[10px] font-bold uppercase tracking-widest bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
+                                onClick={() => triggerAutomatedTicket({
+                                    type: "MailBO",
+                                    clientId: "c2",
+                                    clientName: "Global Solutions",
+                                    details: "Simulation: Courrier papier reçu au siège pour qualification."
+                                })}
+                            >
+                                <Mail size={14} className="mr-2" />
+                                Nouveau Mail BO
+                            </Button>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* Dynamic Communication Feed */}
@@ -175,6 +197,22 @@ export default function CommunicationPage() {
                                                     )}
                                                 </div>
                                                 <div className="flex gap-2 opacity-60 group-hover:opacity-100 transition-opacity shrink-0">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-7 text-[10px] font-bold uppercase tracking-widest text-rose-500 hover:text-rose-600 hover:bg-rose-50"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            triggerAutomatedTicket({
+                                                                type: "Reclamation",
+                                                                clientId: comm.clientId,
+                                                                clientName: comm.sender,
+                                                                details: comm.content
+                                                            });
+                                                        }}
+                                                    >
+                                                        Signaler Litige
+                                                    </Button>
                                                     <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900">
                                                         Marquer comme résolu
                                                     </Button>

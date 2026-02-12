@@ -12,7 +12,7 @@ interface NewDealModalProps {
 }
 
 export function NewDealModal({ isOpen, onClose }: NewDealModalProps) {
-    const { addLead, clients } = useApp();
+    const { addLead, clients, triggerAutomatedTicket } = useApp();
     const [formData, setFormData] = useState({
         title: "",
         clientName: "",
@@ -20,6 +20,7 @@ export function NewDealModal({ isOpen, onClose }: NewDealModalProps) {
         stage: "Nouveau" as const,
         probability: 10,
         expectedCloseDate: "",
+        flagNC: false,
     });
 
     if (!isOpen) return null;
@@ -34,8 +35,18 @@ export function NewDealModal({ isOpen, onClose }: NewDealModalProps) {
             probability: 20,
             expectedCloseDate: formData.expectedCloseDate,
         });
+
+        if (formData.flagNC) {
+            triggerAutomatedTicket({
+                type: "NC",
+                clientId: clients.find(c => c.name === formData.clientName)?.id || "unknown",
+                clientName: formData.clientName,
+                details: `NC signalée lors de la création de l'opportunité : ${formData.title}`
+            });
+        }
+
         onClose();
-        setFormData({ title: "", clientName: "", value: 0, stage: "Nouveau", probability: 10, expectedCloseDate: "" });
+        setFormData({ title: "", clientName: "", value: 0, stage: "Nouveau", probability: 10, expectedCloseDate: "", flagNC: false });
     };
 
     return (
@@ -108,6 +119,18 @@ export function NewDealModal({ isOpen, onClose }: NewDealModalProps) {
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 p-4 bg-rose-50 rounded-2xl border border-rose-100">
+                        <input
+                            type="checkbox"
+                            id="nc-flag"
+                            className="w-4 h-4 rounded border-rose-300 text-rose-600 focus:ring-rose-500"
+                            onChange={(e) => setFormData({ ...formData, flagNC: e.target.checked })}
+                        />
+                        <label htmlFor="nc-flag" className="text-xs font-bold text-rose-700 cursor-pointer">
+                            Signaler une Non-Conformité (NC) immédiatement
+                        </label>
                     </div>
 
                     <div className="pt-4 flex gap-3">

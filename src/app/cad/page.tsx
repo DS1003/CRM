@@ -22,8 +22,10 @@ import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { mockDocuments } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { useApp } from "@/context/AppContext";
 
 export default function CADModulePage() {
+    const { triggerAutomatedTicket } = useApp();
     const cadPlans = mockDocuments.filter(doc => doc.category === "Plan" || doc.type === "CAD");
 
     return (
@@ -164,7 +166,22 @@ export default function CADModulePage() {
                                         <p className="text-xs text-slate-500 mt-1 font-medium">Projet Bridgeport - Section B2</p>
                                     </div>
                                 </div>
-                                <Badge variant="destructive" className="animate-pulse font-bold tracking-wider text-[10px]">CRITIQUE</Badge>
+                                <div className="flex items-center gap-3">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 text-[10px] font-bold uppercase tracking-widest border-rose-200 text-rose-600 hover:bg-rose-50"
+                                        onClick={() => triggerAutomatedTicket({
+                                            type: "Tech",
+                                            clientId: "c3",
+                                            clientName: "Bridgeport Site",
+                                            details: "Clash detected: CVC vs Beam in Section B2"
+                                        })}
+                                    >
+                                        Ouvrir Ticket Tech
+                                    </Button>
+                                    <Badge variant="destructive" className="animate-pulse font-bold tracking-wider text-[10px]">CRITIQUE</Badge>
+                                </div>
                             </div>
 
                             <div className="p-4 bg-white rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-emerald-300 transition-all shadow-sm">
