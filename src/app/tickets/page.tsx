@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
-    Ticket,
     AlertCircle,
     Clock,
     CheckCircle2,
@@ -15,349 +14,933 @@ import {
     Activity,
     UserCircle,
     Briefcase,
-    Zap
+    Zap,
+    MessageSquare,
+    Send,
+    History,
+    FileText,
+    CreditCard,
+    Headset,
+    AlertTriangle,
+    CheckSquare,
+    UserPlus,
+    PauseCircle,
+    Archive,
+    Trash2,
+    ChevronRight,
+    Smartphone,
+    Mail,
+    Phone,
+    Monitor,
+    Smile,
+    Frown,
+    StickyNote
 } from "lucide-react";
+import {
+    Ticket,
+    TicketStatus,
+    TicketPriority,
+    TicketType,
+    TicketChannel,
+    TicketTimelineEvent
+} from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
+import { Dialog, DialogFooter } from "@/components/ui/Dialog";
 import { useApp } from "@/context/AppContext";
 import { cn, formatDate } from "@/lib/utils";
 import { StatsCard } from "@/components/dashboard/StatsCard";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function TicketsPage() {
-    const { tickets, user, simulateEscalation, updateTicket, triggerAutomatedTicket } = useApp();
+    const {
+        tickets,
+        user,
+        simulateEscalation,
+        updateTicket,
+        addTicket,
+        clients,
+        triggerAutomatedTicket
+    } = useApp();
+
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState<string>("All");
+    const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
+    const [processAction, setProcessAction] = useState<TicketStatus | null>(null);
 
-    // Simulate SLA checks on mount
-    useEffect(() => {
-        simulateEscalation();
-    }, []);
+    // Form states
+    const [processNote, setProcessNote] = useState("");
+    const [processSummary, setProcessSummary] = useState("");
+    const [processSatisfaction, setProcessSatisfaction] = useState<boolean>(true);
+    const [processFinalComment, setProcessFinalComment] = useState("");
+    const [processConfirmation, setProcessConfirmation] = useState(false);
 
-    const role = user?.role || "Admin";
-
-    // Filtering based on role and filters
-    const filteredTickets = tickets.filter(ticket => {
-        // Role based visibility
-        if (role === "Ventes") return false; // Sales cannot close tech tickets (per requirement, but maybe they shouldn't even see them if they are purely tech/admin)
-        // Re-read requirement: "Sales cannot close technical tickets". "Super Admin sees all".
-        // "BO sees administrative tickets", "Serv Tech sees technical tickets".
-
-        const isBOTicket = ticket.department === "BO";
-        const isTechTicket = ticket.department === "Serv Tech";
-
-        if (role === "Ventes") {
-            // Sales can maybe see all but not close? The requirement is a bit vague on visibility for sales.
-            // Let's assume they see all for context but can't edit.
-        } else if (role === "BO" && !isBOTicket) {
-            // return false; // Strictly only BO
-        } else if (role === "Serv Tech" && !isTechTicket) {
-            // return false; // Strictly only Serv Tech
-        }
-        // Actually, let's stick to the "BO sees administrative tickets" etc.
-        if (role === "BO" && ticket.department !== "BO") return false;
-        if (role === "Serv Tech" && ticket.department !== "Serv Tech") return false;
-
-        // Search and Status filters
-        const matchesSearch = ticket.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            ticket.id.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = filterStatus === "All" || ticket.status === filterStatus;
-
-        return matchesSearch && matchesStatus;
+    const [newTicket, setNewTicket] = useState({
+        clientId: "",
+        clientName: "",
+        subject: "",
+        description: "",
+        priority: "Medium" as TicketPriority,
+        type: "Technical" as TicketType,
+        channel: "BO" as TicketChannel,
+        department: "BO" as "BO" | "Serv Tech",
+        assignedTo: ""
     });
 
-    // Stats
-    const openCount = tickets.filter(t => t.status === "Open").length;
-    const escalatedCount = tickets.filter(t => t.status === "Escalated").length;
-    const slaCompCount = tickets.filter(t => new Date(t.slaDeadline) > new Date() || t.status === "Closed").length;
-    const slaPercentage = Math.round((slaCompCount / tickets.length) * 100);
+    const isAdmin = user?.role === "Admin";
 
-    const getPriorityColor = (priority: string) => {
-        switch (priority) {
-            case "High": return "text-rose-600 bg-rose-50 border-rose-100";
-            case "Medium": return "text-amber-600 bg-amber-50 border-amber-100";
-            case "Low": return "text-emerald-600 bg-emerald-50 border-emerald-100";
-            default: return "text-slate-600 bg-slate-50 border-slate-100";
+    // Filtering logic
+    const filteredTickets = useMemo(() => {
+        return tickets.filter(t => {
+            if (t.isArchived && filterStatus !== "Archived") return false;
+            if (!t.isArchived && filterStatus === "Archived") return false;
+
+            const matchesSearch =
+                t.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                t.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                t.id.toLowerCase().includes(searchTerm.toLowerCase());
+
+            const matchesStatus = filterStatus === "All" || filterStatus === "Archived" || t.status === filterStatus;
+
+            return matchesSearch && matchesStatus;
+        });
+    }, [tickets, searchTerm, filterStatus]);
+
+    // KPI Calculations
+    const kpis = useMemo(() => {
+        const open = tickets.filter(t => !["Closed", "Archived", "Resolved"].includes(t.status)).length;
+        const escalated = tickets.filter(t => t.status === "Escalated").length;
+        const resolved = tickets.filter(t => t.status === "Resolved" || t.status === "Closed").length;
+        const total = tickets.length;
+        const slaCompliant = tickets.filter(t => new Date(t.slaDeadline) > new Date() || t.status === "Closed").length;
+
+        return {
+            open,
+            escalated,
+            slaCompliance: total > 0 ? Math.round((slaCompliant / total) * 100) : 100,
+            avgResolution: "4.2h" // Simulated
+        };
+    }, [tickets]);
+
+    // SLA Calculation Helper
+    const calculateDeadline = (priority: TicketPriority) => {
+        const hours = priority === "High" ? 4 : priority === "Medium" ? 24 : 72;
+        return new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+    };
+
+    const handleCreateTicket = () => {
+        if (!newTicket.clientId || !newTicket.subject || !newTicket.description) return;
+
+        const client = clients.find(c => c.id === newTicket.clientId);
+
+        addTicket({
+            ...newTicket,
+            clientName: client?.name || "Client Inconnu",
+            status: "Open",
+            createdAt: new Date().toISOString(),
+            slaDeadline: calculateDeadline(newTicket.priority),
+            resolutionSummary: "",
+            resolutionAction: "",
+            finalComment: "",
+            department: newTicket.department
+        });
+
+        setIsCreateModalOpen(false);
+        setNewTicket({
+            clientId: "",
+            clientName: "",
+            subject: "",
+            description: "",
+            priority: "Medium",
+            type: "Technical",
+            channel: "BO",
+            department: "BO",
+            assignedTo: ""
+        });
+    };
+
+    const handleUpdateStatus = () => {
+        if (!selectedTicket || !processAction) return;
+
+        const updates: Partial<Ticket> = { status: processAction };
+
+        if (processAction === "In Progress") {
+            if (!processNote) return;
+            updates.internalNotes = [...(selectedTicket.internalNotes || []), processNote];
+        } else if (processAction === "Resolved") {
+            if (!processSummary || !processNote) return;
+            updates.resolutionSummary = processSummary;
+            updates.resolutionAction = processNote;
+        } else if (processAction === "Closed") {
+            if (!processConfirmation || !processFinalComment) return;
+            updates.satisfaction = processSatisfaction;
+            updates.finalComment = processFinalComment;
+        }
+
+        updateTicket(selectedTicket.id, updates);
+        setIsProcessModalOpen(false);
+        setProcessAction(null);
+        setProcessNote("");
+        setProcessSummary("");
+        setProcessFinalComment("");
+        setProcessConfirmation(false);
+    };
+
+    const handleArchive = (id: string) => {
+        if (!isAdmin) return;
+        updateTicket(id, { isArchived: true, status: "Archived" });
+    };
+
+    const getStatusConfig = (status: TicketStatus) => {
+        switch (status) {
+            case "Open": return { label: "Ouvert", color: "bg-blue-50/50 text-blue-600 border-blue-100/50", icon: AlertCircle };
+            case "Assigned": return { label: "Assigné", color: "bg-indigo-50/50 text-indigo-600 border-indigo-100/50", icon: UserCircle };
+            case "In Progress": return { label: "En cours", color: "bg-amber-50/50 text-amber-600 border-amber-100/50", icon: Activity };
+            case "Waiting Client": return { label: "Attente Client", color: "bg-purple-50/50 text-purple-600 border-purple-100/50", icon: MessageSquare };
+            case "Escalated": return { label: "Escaladé", color: "bg-rose-50/50 text-rose-600 border-rose-100/50", icon: ShieldAlert };
+            case "Resolved": return { label: "Résolu", color: "bg-emerald-50/50 text-emerald-600 border-emerald-100/50", icon: CheckCircle2 };
+            case "Closed": return { label: "Clos", color: "bg-slate-50 text-slate-500 border-slate-200/50", icon: Archive };
+            case "Archived": return { label: "Archivé", color: "bg-slate-50 text-slate-400 border-slate-200/30 opacity-60", icon: Trash2 };
+            default: return { label: status, color: "bg-slate-50 text-slate-500", icon: Zap };
         }
     };
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "Open": return <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-blue-100 font-bold">OUVERT</Badge>;
-            case "In Progress": return <Badge variant="secondary" className="bg-amber-50 text-amber-600 border-amber-100 font-bold">EN COURS</Badge>;
-            case "Escalated": return <Badge variant="destructive" className="animate-pulse font-bold tracking-wider">ESCALADÉ</Badge>;
-            case "Closed": return <Badge variant="success" className="font-bold">CLOS</Badge>;
-            default: return <Badge variant="outline">{status}</Badge>;
+    const getTypeIcon = (type: TicketType) => {
+        switch (type) {
+            case "Complaint": return <AlertTriangle size={14} />;
+            case "Technical": return <Zap size={14} />;
+            case "NC": return <ShieldAlert size={14} />;
+            case "Document": return <FileText size={14} />;
+            case "Payment": return <CreditCard size={14} />;
+        }
+    };
+
+    const getChannelIcon = (channel: TicketChannel) => {
+        switch (channel) {
+            case "Email": return <Mail size={14} />;
+            case "WhatsApp": return <Smartphone size={14} />;
+            case "Phone": return <Phone size={14} />;
+            case "BO": return <Monitor size={14} />;
         }
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
+        <div className="space-y-10 animate-in fade-in duration-700">
+            {/* Header */}
             <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">Tickets & SAV Service</h1>
-                    <p className="text-muted-foreground mt-1 text-lg">Gestion des réclamations, support technique et conformité SLA.</p>
+                    <h1 className="text-2xl font-semibold tracking-tight text-slate-800">NexCare Service</h1>
+                    <p className="text-slate-400 text-xs mt-1 flex items-center gap-2 font-medium">
+                        Focus sur l'excellence opérationnelle et la relation client.
+                    </p>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="outline" className="gap-2 bg-white border-slate-200">
-                        <Activity size={18} />
-                        Rapports SLA
+                    <Button variant="outline" className="h-9 text-[11px] px-4 border-slate-200 text-slate-500 font-bold uppercase tracking-wider rounded-lg" onClick={() => simulateEscalation()}>
+                        Monitor SLA
                     </Button>
-                    <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 ml-4">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 px-3 flex items-center">Simuler :</span>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 text-[9px] font-black hover:bg-rose-50 text-rose-500"
-                            onClick={() => triggerAutomatedTicket({ type: "NC", clientId: "c1", clientName: "Acme Corp" })}
-                        >
-                            NC
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 text-[9px] font-black hover:bg-rose-50 text-rose-500"
-                            onClick={() => triggerAutomatedTicket({ type: "Reclamation", clientId: "c2", clientName: "Global Tech" })}
-                        >
-                            RÉCLAM.
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 text-[9px] font-black hover:bg-blue-50 text-blue-500"
-                            onClick={() => triggerAutomatedTicket({ type: "Tech", clientId: "c3", clientName: "Skyline" })}
-                        >
-                            TECH
-                        </Button>
-                    </div>
-                    <Button className="gap-2 bg-slate-900 text-white font-bold shadow-lg shadow-slate-900/20">
-                        <Zap size={18} />
-                        Nouveau Ticket
+                    <Button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all"
+                    >
+                        Nouveau Flux
                     </Button>
                 </div>
             </div>
 
-            {/* Dashboard Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatsCard
-                    title="Tickets Ouverts"
-                    value={openCount.toString()}
-                    change={-12}
-                    trend="up"
-                    icon={AlertCircle}
-                    description="Total des incidents actifs"
-                />
-                <StatsCard
-                    title="Conformité SLA"
-                    value={`${slaPercentage}%`}
-                    change={3.2}
-                    trend="up"
-                    icon={Clock}
-                    description="Tickets résolus dans les temps"
-                />
-                <StatsCard
-                    title="Escalades Critiques"
-                    value={escalatedCount.toString()}
-                    change={8}
-                    trend="down"
-                    icon={ShieldAlert}
-                    description="Nécessite une action immédiate"
-                />
-                <StatsCard
-                    title="Départements"
-                    value="BO / Tech"
-                    change={0}
-                    trend="up"
-                    icon={Users}
-                    description="Répartition Services Support"
-                />
+            {/* 2026 Modern KPIs Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                <StatsCard title="Requêtes Actives" value={kpis.open.toString()} icon={AlertCircle} description="Volume transactionnel actuel" trend="up" change={5} />
+                <StatsCard title="SLA Compliance" value={`${kpis.slaCompliance}%`} icon={Clock} description="Engagement de niveau de service" trend="up" change={2} />
+                <StatsCard title="Escalades" value={kpis.escalated.toString()} icon={ShieldAlert} description="Alertes critiques prioritaires" trend="down" change={1} />
+                <StatsCard title="Cycle de Vie" value="98%" icon={CheckCircle2} description="Performance globale du flux" trend="up" change={0.5} />
             </div>
 
-            <Card className="card-premium">
-                <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 pb-6">
-                    <div>
-                        <CardTitle>Registre des Incidents & Requêtes</CardTitle>
-                        <CardDescription>Vue omnicanale des tickets de support client.</CardDescription>
-                    </div>
-                    <div className="flex gap-4">
-                        <div className="relative w-72">
-                            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                            <Input
-                                placeholder="Rechercher ticket, client, sujet..."
-                                className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors text-xs font-semibold"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Main Ticket List */}
+                <Card className="lg:col-span-2 border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.02)] ring-1 ring-slate-100/60 rounded-[1.5rem] overflow-hidden">
+                    <CardHeader className="p-6 lg:p-10 border-b border-slate-50">
+                        <div className="flex flex-col xl:flex-row gap-6 justify-between items-start xl:items-center">
+                            <div className="flex bg-slate-50/80 p-1 rounded-xl ring-1 ring-slate-100/50 backdrop-blur-sm self-start">
+                                {["All", "Open", "Assigned", "In Progress", "Resolved"].map((s) => (
+                                    <button
+                                        key={s}
+                                        onClick={() => setFilterStatus(s)}
+                                        className={cn(
+                                            "px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300",
+                                            filterStatus === s
+                                                ? "bg-white text-slate-900 shadow-[0_2px_8px_rgba(0,0,0,0.04)] ring-1 ring-slate-200/20"
+                                                : "text-slate-400 hover:text-slate-600"
+                                        )}
+                                    >
+                                        {s === "All" ? "Tous" : s === "In Progress" ? "En Cours" : s}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="relative w-full xl:w-80 group">
+                                <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors" />
+                                <Input
+                                    placeholder="Recherche intelligente..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-11 h-10 bg-slate-50/50 border-none ring-1 ring-slate-100/80 text-[11px] font-medium focus:ring-primary/20 focus:bg-white transition-all rounded-xl shadow-none"
+                                />
+                            </div>
                         </div>
-                        <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-200">
-                            {["All", "Open", "Escalated", "Closed"].map((s) => (
-                                <button
-                                    key={s}
-                                    onClick={() => setFilterStatus(s)}
-                                    className={cn(
-                                        "px-4 py-1.5 text-[10px] uppercase font-black tracking-widest rounded-lg transition-all",
-                                        filterStatus === s ? "bg-white text-primary shadow-sm" : "text-slate-400 hover:text-slate-600"
-                                    )}
-                                >
-                                    {s === "All" ? "Tous" : s === "Open" ? "Ouverts" : s === "Escalated" ? "Escaladés" : "Clos"}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr className="text-left border-b border-slate-50 text-[10px] text-slate-400 uppercase tracking-widest font-black">
-                                    <th className="py-4 px-6">ID & Client</th>
-                                    <th className="py-4 px-4">Sujet & Qualification</th>
-                                    <th className="py-4 px-4">Priorité</th>
-                                    <th className="py-4 px-4">SLA Deadline</th>
-                                    <th className="py-4 px-4">Affecté à</th>
-                                    <th className="py-4 px-4">Statut</th>
-                                    <th className="py-4 px-6 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {filteredTickets.map((ticket) => {
-                                    const isSLAExpiringSoon = new Date(ticket.slaDeadline).getTime() - new Date().getTime() < 86400000;
-                                    const isOverdue = new Date(ticket.slaDeadline) < new Date();
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="text-left border-b border-slate-50 text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
+                                        <th className="py-5 px-8 font-bold">Identité Ticket</th>
+                                        <th className="py-5 px-4 font-bold">Classification</th>
+                                        <th className="py-5 px-4 font-bold">Échéance SLA</th>
+                                        <th className="py-5 px-4 font-bold">Statut</th>
+                                        <th className="py-5 px-8 text-right font-bold">Détails</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50/80">
+                                    {filteredTickets.map((ticket, idx) => {
+                                        const status = getStatusConfig(ticket.status);
+                                        const isOverdue = new Date(ticket.slaDeadline) < new Date();
 
-                                    return (
-                                        <tr key={ticket.id} className="group hover:bg-slate-50/50 transition-colors">
-                                            <td className="py-4 px-6">
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs font-black text-slate-500 mb-0.5">#{ticket.id}</span>
-                                                    <span className="text-sm font-bold text-slate-900">{ticket.clientName}</span>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-4">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-slate-800 line-clamp-1">{ticket.subject}</span>
-                                                    <span className="text-[10px] text-primary font-black uppercase tracking-wider mt-1">{ticket.qualification}</span>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-4">
-                                                <div className={cn("inline-flex px-2 py-1 rounded-md border text-[10px] font-black uppercase tracking-widest", getPriorityColor(ticket.priority))}>
-                                                    {ticket.priority === "High" ? "HAUTE" : ticket.priority === "Medium" ? "MOYENNE" : "BASSE"}
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div className={cn(
-                                                        "p-1.5 rounded-lg",
-                                                        isOverdue ? "bg-rose-50 text-rose-500" : isSLAExpiringSoon ? "bg-amber-50 text-amber-500" : "bg-slate-50 text-slate-400"
-                                                    )}>
-                                                        <Clock size={14} />
-                                                    </div>
+                                        return (
+                                            <motion.tr
+                                                key={ticket.id}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: idx * 0.05 }}
+                                                className="group hover:bg-slate-50/40 transition-all duration-300"
+                                            >
+                                                <td className="py-6 px-10">
                                                     <div className="flex flex-col">
-                                                        <span className={cn("text-xs font-bold", isOverdue ? "text-rose-600" : "text-slate-700")}>
-                                                            {formatDate(ticket.slaDeadline)}
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <span className="text-[9px] font-bold text-slate-300 tracking-widest uppercase">#{ticket.id}</span>
+                                                            <div className="w-1 h-1 rounded-full bg-slate-200" />
+                                                            <span className="text-[9px] font-bold text-slate-400/70">{ticket.channel}</span>
+                                                        </div>
+                                                        <span
+                                                            className="text-[13px] font-semibold text-slate-700 leading-tight group-hover:text-primary transition-colors cursor-pointer max-w-[280px]"
+                                                            onClick={() => { setSelectedTicket(ticket); setIsDetailModalOpen(true); }}
+                                                        >
+                                                            {ticket.subject}
                                                         </span>
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center text-[7px] font-bold text-slate-400 border border-slate-200/50">
+                                                                {ticket.clientName.charAt(0)}
+                                                            </div>
+                                                            <span className="text-[10px] text-slate-400 font-medium">{ticket.clientName}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="py-6 px-4">
+                                                    <div className="space-y-2">
+                                                        <div className={cn(
+                                                            "inline-flex px-2 py-0 border-none text-[8px] font-bold uppercase tracking-[0.1em]",
+                                                            ticket.priority === "High" ? "text-rose-500" :
+                                                                ticket.priority === "Medium" ? "text-amber-500" :
+                                                                    "text-emerald-500"
+                                                        )}>
+                                                            {ticket.priority}
+                                                        </div>
+                                                        <p className="text-[9px] font-bold text-slate-300 tracking-wider pl-2">{ticket.type}</p>
+                                                    </div>
+                                                </td>
+                                                <td className="py-6 px-4">
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <div className={cn(
+                                                            "flex items-center gap-2 text-[11px] font-medium",
+                                                            isOverdue && ticket.status !== "Closed" ? "text-rose-400" : "text-slate-400"
+                                                        )}>
+                                                            <Clock size={11} strokeWidth={2.5} />
+                                                            {formatDate(ticket.slaDeadline)}
+                                                        </div>
                                                         {isOverdue && ticket.status !== "Closed" && (
-                                                            <span className="text-[9px] text-rose-500 font-black uppercase">RETARD SLA</span>
+                                                            <span className="text-[8px] font-bold text-rose-500 tracking-widest uppercase pl-4">Urgent</span>
                                                         )}
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
-                                                        {ticket.assignedTo.charAt(0)}
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs font-bold text-slate-700">{ticket.assignedTo}</span>
-                                                        <span className="text-[9px] text-slate-400 font-bold uppercase">{ticket.department}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-4">
-                                                {getStatusBadge(ticket.status)}
-                                            </td>
-                                            <td className="py-4 px-6 text-right">
-                                                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                </td>
+                                                <td className="py-6 px-4">
+                                                    <Badge variant="outline" className={cn("text-[8px] font-bold border-none px-3 py-0.5 rounded-full shadow-none capitalize", status.color.split(' ')[1])}>
+                                                        <div className={cn("w-1 h-1 rounded-full mr-1.5", status.color.split(' ')[0].replace('bg-', 'bg-'))} />
+                                                        {status.label}
+                                                    </Badge>
+                                                </td>
+                                                <td className="py-6 px-10 text-right">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="h-8 text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-primary"
-                                                        onClick={() => updateTicket(ticket.id, { status: "In Progress" })}
-                                                        disabled={ticket.status === "Closed"}
+                                                        className="h-8 w-8 p-0 hover:bg-slate-100 hover:text-primary rounded-lg transition-all"
+                                                        onClick={() => { setSelectedTicket(ticket); setIsDetailModalOpen(true); }}
                                                     >
-                                                        Traiter
+                                                        <ChevronRight size={14} />
                                                     </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        className="h-8 text-[10px] font-bold uppercase tracking-widest bg-slate-900 text-white shadow-md disabled:bg-slate-100 disabled:text-slate-400"
-                                                        onClick={() => updateTicket(ticket.id, { status: "Closed" })}
-                                                        disabled={ticket.status === "Closed" || (role === "Ventes" && ticket.department === "Serv Tech")}
-                                                    >
-                                                        Clore
-                                                    </Button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card className="card-premium bg-slate-50/50 border-slate-100 shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                            <Briefcase size={20} className="text-primary" />
-                            Répartition par Département
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex items-center justify-center py-6">
-                        <div className="flex gap-12">
-                            <div className="flex flex-col items-center">
-                                <div className="w-20 h-20 rounded-full border-[6px] border-primary flex items-center justify-center">
-                                    <span className="text-xl font-black">{tickets.filter(t => t.department === "BO").length}</span>
-                                </div>
-                                <span className="mt-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Back Office</span>
-                            </div>
-                            <div className="flex flex-col items-center">
-                                <div className="w-20 h-20 rounded-full border-[6px] border-slate-900 flex items-center justify-center">
-                                    <span className="text-xl font-black">{tickets.filter(t => t.department === "Serv Tech").length}</span>
-                                </div>
-                                <span className="mt-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Service Tech</span>
-                            </div>
+                                                </td>
+                                            </motion.tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="card-premium bg-slate-900 text-white overflow-hidden relative">
-                    <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform">
-                        <ShieldAlert size={120} />
-                    </div>
-                    <CardHeader>
-                        <CardTitle className="text-white">Auto-Escalade IA Modernys</CardTitle>
-                        <CardDescription className="text-slate-400">Surveillance proactive des délais SLA en temps réel.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-8 relative z-10">
-                        <p className="text-sm text-slate-300 leading-relaxed mb-6 font-medium">
-                            Le système détecte automatiquement les tickets dont le délai est dépassé et les escalade vers le responsable de département correspondant.
-                        </p>
-                        <div className="flex gap-4">
-                            <div className="flex-1 bg-white/5 border border-white/10 p-4 rounded-2xl">
-                                <span className="text-[10px] font-black text-primary uppercase block mb-1">Dernier Check-up</span>
-                                <span className="text-sm font-bold">À l'instant</span>
-                            </div>
-                            <div className="flex-1 bg-white/5 border border-white/10 p-4 rounded-2xl">
-                                <span className="text-[10px] font-black text-amber-500 uppercase block mb-1">Actions auto effectuées</span>
-                                <span className="text-sm font-bold">2 Escalades</span>
-                            </div>
+                <div className="space-y-6">
+                    <Card className="border-none bg-slate-900 text-white overflow-hidden relative group shadow-2xl ring-1 ring-slate-800 rounded-[2rem]">
+                        <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:scale-110 transition-transform duration-[3s] pointer-events-none">
+                            <Zap size={140} strokeWidth={1} />
                         </div>
-                    </CardContent>
-                </Card>
+                        <CardHeader className="p-8 pb-4">
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]">
+                                    <ShieldAlert size={16} />
+                                </div>
+                                <CardTitle className="text-white text-base font-bold tracking-tight">NexCare AI Engine</CardTitle>
+                            </div>
+                            <CardDescription className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Auto-monitoring relationnel</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-8 pt-0 space-y-5 relative z-10">
+                            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-md">
+                                <span className="text-[8px] font-bold text-primary uppercase tracking-[0.2em] block mb-2">Flux Status</span>
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)] animate-pulse" />
+                                    <p className="text-[11px] font-semibold text-slate-300">Opérations Nominal</p>
+                                </div>
+                            </div>
+                            <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-10 transition-all rounded-xl shadow-lg shadow-primary/20 text-[10px] uppercase tracking-wider" variant="secondary">
+                                Intelligence Report
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.02)] ring-1 ring-slate-100/60 rounded-[2rem] overflow-hidden">
+                        <CardHeader className="p-8 pb-4 border-b border-slate-50">
+                            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center justify-between">
+                                Simulations Système
+                                <Zap size={12} className="text-amber-400 opacity-60" />
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-2 gap-3 p-6">
+                            {[
+                                { label: "Alerte NC", type: "NC", color: "hover:bg-rose-50 hover:text-rose-600 hover:ring-rose-200" },
+                                { label: "Réclam.", type: "Reclamation", color: "hover:bg-amber-50 hover:text-amber-600 hover:ring-amber-200" },
+                                { label: "Incident Tech", type: "Tech", color: "hover:bg-blue-50 hover:text-blue-600 hover:ring-blue-200" },
+                                { label: "Requis Doc", type: "DocRequest", color: "hover:bg-purple-50 hover:text-purple-600 hover:ring-purple-200" }
+                            ].map((sim) => (
+                                <Button
+                                    key={sim.label}
+                                    variant="outline"
+                                    className={cn(
+                                        "text-[9px] font-bold h-10 border-none ring-1 ring-slate-100/80 transition-all rounded-xl shadow-none uppercase tracking-wider",
+                                        sim.color
+                                    )}
+                                    onClick={() => triggerAutomatedTicket({ type: sim.type as any, clientId: "c1", clientName: "Acme Corp" })}
+                                >
+                                    {sim.label}
+                                </Button>
+                            ))}
+                        </CardContent>
+                    </Card>
+
+                    <Card className="card-premium border-slate-200/50 shadow-sm overflow-hidden">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900">
+                                <History size={18} className="text-primary/70" />
+                                Lifecycle Flux
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="px-6 pb-6">
+                            <div className="space-y-6">
+                                {[
+                                    { s: "Open", d: "Dépôt et qualification" },
+                                    { s: "In Progress", d: "Traitement et logging" },
+                                    { s: "Waiting", d: "Action client requise" },
+                                    { s: "Resolved", d: "Solution implémentée" },
+                                    { s: "Closed", d: "Validation satisfaction" }
+                                ].map((step, idx) => (
+                                    <div key={step.s} className="flex gap-4">
+                                        <div className="flex flex-col items-center pt-1">
+                                            <div className={cn(
+                                                "w-5 h-5 rounded-full border-2 flex items-center justify-center text-[9px] font-bold",
+                                                idx === 0 ? "border-primary/40 bg-primary/5 text-primary" : "border-slate-100 bg-slate-50 text-slate-400"
+                                            )}>
+                                                {idx + 1}
+                                            </div>
+                                            {idx !== 4 && <div className="flex-1 w-px bg-slate-100 my-1" />}
+                                        </div>
+                                        <div className="pt-1">
+                                            <p className="text-[11px] font-bold text-slate-800 uppercase tracking-wider">{step.s}</p>
+                                            <p className="text-[10px] text-slate-500 font-medium leading-relaxed mt-1">{step.d}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
+
+            {/* Create Ticket Modal */}
+            <Dialog
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                title="Ouverture Nouveau Flux SAV"
+                description="Initialisation d'un ticket omnicanal pour le service support."
+                className="max-w-2xl rounded-3xl"
+            >
+                <div className="grid grid-cols-2 gap-6 py-6">
+                    <div className="space-y-5">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Client émetteur</label>
+                            <select
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 h-11 text-sm font-semibold focus:bg-white focus:ring-4 focus:ring-primary/5 outline-none transition-all appearance-none"
+                                value={newTicket.clientId}
+                                onChange={(e) => setNewTicket({ ...newTicket, clientId: e.target.value })}
+                            >
+                                <option value="">Sélect. Client...</option>
+                                {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Titre de la requête</label>
+                            <Input
+                                placeholder="ex: Problème structurel..."
+                                className="bg-slate-50 border-slate-200 h-11 text-sm font-semibold rounded-2xl focus:bg-white"
+                                value={newTicket.subject}
+                                onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Type</label>
+                                <select
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 h-11 text-sm font-semibold"
+                                    value={newTicket.type}
+                                    onChange={(e) => setNewTicket({ ...newTicket, type: e.target.value as TicketType })}
+                                >
+                                    <option value="Technical">Technique</option>
+                                    <option value="Complaint">Réclamation</option>
+                                    <option value="NC">Non-Conformité</option>
+                                    <option value="Document">Documentaire</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Urgence (SLA)</label>
+                                <select
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 h-11 text-sm font-semibold"
+                                    value={newTicket.priority}
+                                    onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value as TicketPriority })}
+                                >
+                                    <option value="High">Haute (4h)</option>
+                                    <option value="Medium">Moyenne (24h)</option>
+                                    <option value="Low">Basse (72h)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-5">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Description détaillée</label>
+                            <textarea
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm font-semibold min-h-[155px] outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all text-slate-900"
+                                placeholder="Détaillez l'incident ou la demande..."
+                                value={newTicket.description}
+                                onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Canal</label>
+                                <select
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 h-11 text-sm font-semibold"
+                                    value={newTicket.channel}
+                                    onChange={(e) => setNewTicket({ ...newTicket, channel: e.target.value as TicketChannel })}
+                                >
+                                    <option value="BO">Back Office</option>
+                                    <option value="Email">Email</option>
+                                    <option value="WhatsApp">WhatsApp</option>
+                                    <option value="Phone">Téléphone</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Service</label>
+                                <select
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 h-11 text-sm font-semibold"
+                                    value={newTicket.department}
+                                    onChange={(e) => setNewTicket({ ...newTicket, department: e.target.value as 'BO' | 'Serv Tech' })}
+                                >
+                                    <option value="BO">BO Admin</option>
+                                    <option value="Serv Tech">Service Technique</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <DialogFooter className="border-t border-slate-100/60 pt-6">
+                    <Button variant="ghost" onClick={() => setIsCreateModalOpen(false)} className="rounded-xl font-semibold">Annuler</Button>
+                    <Button onClick={handleCreateTicket} className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 rounded-xl h-11">Activer le Ticket</Button>
+                </DialogFooter>
+            </Dialog>
+
+            {/* Ticket Detail Modal */}
+            <Dialog
+                isOpen={isDetailModalOpen}
+                onClose={() => setIsDetailModalOpen(false)}
+                className="max-w-6xl !p-0 overflow-hidden rounded-[2.5rem] border-none shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] ring-1 ring-slate-100/20"
+            >
+                {selectedTicket && (
+                    <div className="flex flex-col lg:flex-row h-[85vh] max-h-[850px] min-h-[600px] overflow-hidden bg-white/80 backdrop-blur-2xl">
+                        {/* Main Info Column */}
+                        <div className="flex-1 overflow-y-auto thin-scrollbar p-8 lg:p-10 space-y-10">
+                            {/* Header Section */}
+                            <div className="flex justify-between items-start gap-8">
+                                <div className="space-y-3.5">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[9px] font-bold text-slate-300 tracking-[0.1em] uppercase">Flux #{selectedTicket.id}</span>
+                                        <div className="w-1 h-1 rounded-full bg-slate-200" />
+                                        <Badge variant="outline" className={cn("text-[8px] font-semibold px-2 py-0 border-none rounded-full bg-transparent shadow-none capitalize", getStatusConfig(selectedTicket.status).color.split(' ')[1])}>
+                                            {getStatusConfig(selectedTicket.status).label}
+                                        </Badge>
+                                    </div>
+                                    <h2 className="text-xl font-semibold text-slate-800 tracking-tight leading-snug max-w-lg">
+                                        {selectedTicket.subject}
+                                    </h2>
+                                    <div className="flex items-center gap-2.5 pt-0.5">
+                                        <div className="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center text-primary font-bold text-[9px] border border-slate-100/60">
+                                            {selectedTicket.clientName.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-0.5">Émetteur</p>
+                                            <p className="text-[11px] font-medium text-slate-600">{selectedTicket.clientName}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="hidden sm:block shrink-0">
+                                    <div className="bg-slate-50/20 rounded-xl p-3 border border-slate-100/60">
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-right">
+                                                <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest mb-0.5">Deadline</p>
+                                                <p className={cn("text-[11px] font-semibold", new Date(selectedTicket.slaDeadline) < new Date() ? "text-rose-500" : "text-slate-500")}>
+                                                    {formatDate(selectedTicket.slaDeadline)}
+                                                </p>
+                                            </div>
+                                            <Clock size={14} className={new Date(selectedTicket.slaDeadline) < new Date() ? "text-rose-400" : "text-slate-300"} strokeWidth={2} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Info Grid */}
+                            <div className="grid grid-cols-3 gap-6">
+                                <div className="col-span-2 space-y-3">
+                                    <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                                        Synthèse descriptive
+                                    </p>
+                                    <div className="p-5 bg-slate-50/20 rounded-xl border border-dotted border-slate-200">
+                                        <p className="text-[13px] font-medium text-slate-500 leading-relaxed italic">
+                                            "{selectedTicket.description}"
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="space-y-4 pt-6">
+                                    <div className="flex justify-between items-center px-1">
+                                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Classification</span>
+                                        <span className="text-[10px] font-semibold text-slate-600">{selectedTicket.type}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center px-1">
+                                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Canal</span>
+                                        <div className="flex items-center gap-2 font-semibold text-slate-600 text-[10px]">
+                                            {getChannelIcon(selectedTicket.channel)}
+                                            {selectedTicket.channel}
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center px-1 pt-3 border-t border-slate-50">
+                                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Responsable</span>
+                                        <span className="text-[9px] font-bold text-primary/60 px-2 py-0.5 bg-primary/5 rounded-full border border-primary/10">
+                                            @{selectedTicket.assignedTo.replace(/\s+/g, '').toLowerCase()}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Internal Notes */}
+                            <div className="space-y-6">
+                                <h3 className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                                    <div className="w-1 h-4 bg-primary/20 rounded-full" />
+                                    Notes & Diagnostics
+                                </h3>
+                                <div className="space-y-3">
+                                    {selectedTicket.internalNotes?.map((note: string, i: number) => (
+                                        <div key={i} className="p-4 bg-white border border-slate-50 rounded-xl text-[12px] font-medium text-slate-500 flex gap-4 hover:border-slate-100 transition-all">
+                                            <span className="text-[9px] font-bold text-slate-200 mt-0.5">#{i + 1}</span>
+                                            <p className="leading-relaxed">{note}</p>
+                                        </div>
+                                    ))}
+                                    {(!selectedTicket.internalNotes || selectedTicket.internalNotes.length === 0) && (
+                                        <div className="py-12 text-center border border-dashed border-slate-100 rounded-xl text-slate-300 text-[10px] font-medium italic">
+                                            Aucun diagnostic enregistré.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Resolution Section if applicable */}
+                            {(selectedTicket.status === "Resolved" || selectedTicket.status === "Closed") && (
+                                <div className="p-8 bg-emerald-50/20 rounded-[2rem] border border-emerald-100/30 space-y-6">
+                                    <h3 className="text-base font-bold text-emerald-700/80 flex items-center gap-2.5">
+                                        <CheckSquare size={18} />
+                                        Résolution SAV
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-bold text-emerald-600/40 uppercase tracking-widest">Synthèse</p>
+                                            <p className="text-sm font-medium text-emerald-800/70 leading-relaxed italic">"{selectedTicket.resolutionSummary}"</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-bold text-emerald-600/40 uppercase tracking-widest">Mesure Corrective</p>
+                                            <p className="text-sm font-medium text-emerald-800/80 leading-relaxed bg-white/40 p-4 rounded-xl border border-emerald-100/20">
+                                                {selectedTicket.resolutionAction}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Timeline / Action Sidebar */}
+                        <div className="w-full lg:w-[320px] bg-slate-50/30 border-l border-slate-50 flex flex-col h-full">
+                            <div className="p-8 flex flex-col h-full">
+                                <h3 className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] mb-8 px-1">
+                                    Transaction Log
+                                </h3>
+
+                                <div className="flex-1 overflow-y-auto thin-scrollbar px-1 mb-6 min-h-0 relative">
+                                    <div className="absolute left-[2.5px] top-2 bottom-0 w-[0.5px] bg-slate-100" />
+                                    <div className="space-y-0 relative">
+                                        {selectedTicket.timeline.map((event: TicketTimelineEvent) => (
+                                            <div key={event.id} className="flex gap-4 group">
+                                                <div className={cn(
+                                                    "w-1.5 h-1.5 rounded-full mt-1.5 z-10 transition-all ring-4 ring-white shrink-0",
+                                                    event.type === "escalation" ? "bg-rose-400" :
+                                                        event.type === "status_change" ? "bg-primary/50" : "bg-slate-200"
+                                                )} />
+                                                <div className="flex-1 space-y-1 pb-8">
+                                                    <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">{formatDate(event.timestamp)}</p>
+                                                    <p className="text-[11px] font-medium text-slate-500 leading-relaxed group-hover:text-slate-800 transition-colors">{event.content}</p>
+                                                    <p className="text-[8px] text-slate-400 font-medium italic">
+                                                        {event.author}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons Area */}
+                                <div className="space-y-3 pt-8 border-t border-slate-100 mt-auto bg-transparent z-20">
+                                    {selectedTicket.status === "Open" && (
+                                        <Button
+                                            className="w-full bg-slate-900 text-white font-semibold h-10 rounded-lg shadow-none hover:bg-slate-800 transition-all text-[10px] uppercase tracking-wider"
+                                            onClick={() => { setProcessAction("In Progress"); setIsProcessModalOpen(true); setIsDetailModalOpen(false); }}
+                                        >
+                                            Activer le traitement
+                                        </Button>
+                                    )}
+                                    {selectedTicket.status === "In Progress" && (
+                                        <>
+                                            <Button
+                                                className="w-full bg-slate-900 text-white font-semibold h-10 rounded-lg shadow-none hover:bg-slate-800 transition-all text-[10px] uppercase tracking-wider"
+                                                onClick={() => { setProcessAction("Resolved"); setIsProcessModalOpen(true); setIsDetailModalOpen(false); }}
+                                            >
+                                                Valider Résolution
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full border-slate-200 font-semibold h-10 rounded-lg hover:bg-slate-50 text-slate-500 text-[9px] uppercase tracking-widest"
+                                                onClick={() => { setProcessAction("Waiting Client"); setIsProcessModalOpen(true); setIsDetailModalOpen(false); }}
+                                            >
+                                                Requête Client
+                                            </Button>
+                                        </>
+                                    )}
+                                    {selectedTicket.status === "Resolved" && (
+                                        <Button
+                                            className="w-full bg-slate-900 text-white font-semibold h-10 rounded-lg shadow-none hover:bg-slate-800 transition-all text-[10px] uppercase tracking-wider"
+                                            onClick={() => { setProcessAction("Closed"); setIsProcessModalOpen(true); setIsDetailModalOpen(false); }}
+                                        >
+                                            Clôturer le flux
+                                        </Button>
+                                    )}
+                                    {selectedTicket.status === "Escalated" && isAdmin && (
+                                        <Button
+                                            className="w-full bg-rose-500 text-white font-semibold h-10 rounded-lg shadow-none hover:bg-rose-600 transition-all text-[10px] uppercase tracking-wider"
+                                            onClick={() => { setProcessAction("In Progress"); setIsProcessModalOpen(true); setIsDetailModalOpen(false); }}
+                                        >
+                                            Débloquer
+                                        </Button>
+                                    )}
+                                    {selectedTicket.status === "Waiting Client" && (
+                                        <Button
+                                            className="w-full bg-slate-900 text-white font-semibold h-10 rounded-lg shadow-none hover:bg-slate-800 transition-all text-[10px] uppercase tracking-wider"
+                                            onClick={() => { setProcessAction("In Progress"); setIsProcessModalOpen(true); setIsDetailModalOpen(false); }}
+                                        >
+                                            Reprendre le flux
+                                        </Button>
+                                    )}
+                                    {selectedTicket.status === "Closed" && (
+                                        <div className="p-5 bg-white border border-slate-50 rounded-xl text-center shadow-sm">
+                                            <p className="text-[8px] font-bold text-slate-300 uppercase mb-3 tracking-widest">Feedback Client</p>
+                                            <div className="flex justify-center flex-col items-center gap-1.5 font-medium">
+                                                {selectedTicket.satisfaction ? (
+                                                    <>
+                                                        <Smile className="text-emerald-400/80" size={32} strokeWidth={1} />
+                                                        <span className="text-[9px] text-emerald-500/60 uppercase tracking-widest">Expérience Optimale</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Frown className="text-rose-300/80" size={32} strokeWidth={1} />
+                                                        <span className="text-[9px] text-rose-400/60 uppercase tracking-widest">Insatisfaction</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </Dialog>
+
+            {/* Workflow Processing Modal */}
+            <Dialog
+                isOpen={isProcessModalOpen}
+                onClose={() => setIsProcessModalOpen(false)}
+                title={
+                    processAction === "In Progress" ? "Prise en charge incidente" :
+                        processAction === "Resolved" ? "Validation de résolution" :
+                            processAction === "Closed" ? "Clôture de flux SAV" :
+                                "Action Requise"
+                }
+                className="max-w-md rounded-3xl"
+            >
+                <div className="py-6 space-y-6">
+                    {processAction === "In Progress" && (
+                        <div className="space-y-5">
+                            <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-100/50 text-xs font-semibold text-amber-700 leading-relaxed flex gap-3">
+                                <AlertTriangle size={18} className="shrink-0" />
+                                <p>Un diagnostic initial est requis pour activer le passage en cours de traitement.</p>
+                            </div>
+                            <textarea
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-semibold min-h-[140px] outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all text-slate-900"
+                                placeholder="Détaillez votre plan d'action..."
+                                value={processNote}
+                                onChange={(e) => setProcessNote(e.target.value)}
+                            />
+                        </div>
+                    )}
+
+                    {processAction === "Resolved" && (
+                        <div className="space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Solution technique</label>
+                                <Input
+                                    className="h-11 font-semibold rounded-2xl bg-slate-50 focus:bg-white"
+                                    placeholder="ex: Correctif structurel appliqué"
+                                    value={processSummary}
+                                    onChange={(e) => setProcessSummary(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Log d'intervention</label>
+                                <textarea
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-semibold min-h-[120px] outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all text-slate-900"
+                                    placeholder="Décrivez les étapes finales..."
+                                    value={processNote}
+                                    onChange={(e) => setProcessNote(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {processAction === "Closed" && (
+                        <div className="space-y-8">
+                            <div className="flex justify-between items-center p-5 bg-slate-50/50 rounded-2xl border border-slate-100">
+                                <span className="text-sm font-bold text-slate-700">Satisfaction Client</span>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setProcessSatisfaction(true)}
+                                        className={cn("p-2.5 rounded-xl transition-all shadow-sm", processSatisfaction ? "bg-emerald-500 text-white" : "bg-white text-slate-300 border border-slate-100 hover:text-slate-500")}
+                                    >
+                                        <Smile size={24} />
+                                    </button>
+                                    <button
+                                        onClick={() => setProcessSatisfaction(false)}
+                                        className={cn("p-2.5 rounded-xl transition-all shadow-sm", !processSatisfaction ? "bg-rose-500 text-white" : "bg-white text-slate-300 border border-slate-100 hover:text-slate-500")}
+                                    >
+                                        <Frown size={24} />
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Conclusion Archivage</label>
+                                <textarea
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-semibold min-h-[100px]"
+                                    placeholder="Bilan final de la relation sur ce ticket..."
+                                    value={processFinalComment}
+                                    onChange={(e) => setProcessFinalComment(e.target.value)}
+                                />
+                            </div>
+                            <div className="flex items-center gap-4 p-5 bg-primary/5 rounded-2xl border border-primary/10 cursor-pointer shadow-sm shadow-blue-900/5 transition-all hover:bg-primary/10" onClick={() => setProcessConfirmation(!processConfirmation)}>
+                                <div className={cn("w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all", processConfirmation ? "bg-primary border-primary text-white" : "border-slate-300 bg-white shadow-inner")}>
+                                    {processConfirmation && <CheckSquare size={16} />}
+                                </div>
+                                <span className="text-xs font-bold text-slate-700">Je valide la clôture définitive du flux.</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {processAction === "Waiting Client" && (
+                        <div className="space-y-5">
+                            <div className="p-5 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
+                                <p className="text-xs font-semibold text-indigo-700 leading-relaxed italic">
+                                    Notification automatique via {selectedTicket?.channel || 'BO'}.
+                                </p>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Objet de la demande</label>
+                                <textarea
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-semibold min-h-[120px]"
+                                    placeholder="ex: Manque photos justificatives..."
+                                    value={processNote}
+                                    onChange={(e) => setProcessNote(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <DialogFooter className="pt-6 border-t border-slate-100/60">
+                    <Button variant="ghost" onClick={() => setIsProcessModalOpen(false)} className="rounded-xl font-semibold">Annuler</Button>
+                    <Button
+                        onClick={handleUpdateStatus}
+                        disabled={
+                            (processAction === "In Progress" && !processNote) ||
+                            (processAction === "Resolved" && (!processSummary || !processNote)) ||
+                            (processAction === "Closed" && (!processConfirmation || !processFinalComment)) ||
+                            (processAction === "Waiting Client" && !processNote)
+                        }
+                        className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 rounded-xl transition-all"
+                    >
+                        Confirmer Action
+                    </Button>
+                </DialogFooter>
+            </Dialog>
         </div>
     );
 }

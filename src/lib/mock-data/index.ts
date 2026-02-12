@@ -118,51 +118,65 @@ export const mockTickets: Ticket[] = [
         clientId: "c1",
         clientName: "Acme Corp",
         subject: "Erreur de facturation - Janvier",
+        description: "Le client signale une double facturation sur le service de maintenance de janvier.",
         priority: "High",
         status: "Open",
+        type: "Payment",
+        channel: "Email",
         department: "BO",
-        assignedTo: "Admin",
+        assignedTo: "Gestionnaire BO",
         createdAt: "2024-02-10T08:00:00Z",
         slaDeadline: "2024-02-11T08:00:00Z",
-        qualification: "Facturation"
+        qualification: "Facturation",
+        internalNotes: ["Appel reçu ce matin", "Vérification en cours avec la comptabilité"],
+        timeline: [
+            { id: "e1", type: "status_change", content: "Ticket ouvert", author: "Système", timestamp: "2024-02-10T08:00:00Z", statusTo: "Open" },
+            { id: "e2", type: "note", content: "Dossier transmis au service financier", author: "Alex Rivera", timestamp: "2024-02-10T09:30:00Z" }
+        ],
+        isArchived: false
     },
     {
         id: "T-102",
         clientId: "c2",
         clientName: "Global Tech Solutions",
         subject: "Problème accès serveur VPN",
+        description: "L'équipe technique du client ne parvient pas à se connecter au serveur de fichiers via VPN.",
         priority: "Medium",
         status: "In Progress",
+        type: "Technical",
+        channel: "Phone",
         department: "Serv Tech",
-        assignedTo: "Chef de projet",
+        assignedTo: "Support Technique",
         createdAt: "2024-02-11T10:00:00Z",
         slaDeadline: "2024-02-13T10:00:00Z",
-        qualification: "Accès Technique"
+        qualification: "Accès Technique",
+        internalNotes: ["Le pare-feu semble bloquer les ports", "Diagnostic en cours avec Sarah"],
+        timeline: [
+            { id: "e3", type: "status_change", content: "Ticket ouvert", author: "Système", timestamp: "2024-02-11T10:00:00Z", statusTo: "Open" },
+            { id: "e4", type: "status_change", content: "Passage en cours de traitement", author: "Marco Rossi", timestamp: "2024-02-11T11:00:00Z", statusFrom: "Open", statusTo: "In Progress" }
+        ],
+        isArchived: false
     },
     {
         id: "T-103",
-        clientId: "c3",
-        clientName: "Skyline Construction",
-        subject: "Demande de documents techniques - Phase 2",
-        priority: "Low",
-        status: "Closed",
-        department: "BO",
-        assignedTo: "Admin",
-        createdAt: "2024-02-05T09:00:00Z",
-        slaDeadline: "2024-02-08T09:00:00Z",
-        qualification: "Documentation"
-    },
-    {
-        id: "T-104",
         clientId: "c1",
         clientName: "Acme Corp",
         subject: "Panne structurelle signalée - Secteur Nord",
+        description: "Fissure importante détectée sur le pilier B-14 lors de l'inspection hebdomadaire.",
         priority: "High",
         status: "Escalated",
+        type: "NC",
+        channel: "BO",
         department: "Serv Tech",
-        assignedTo: "Chef de projet",
+        assignedTo: "Expert Structure",
         createdAt: "2024-02-09T14:00:00Z",
         slaDeadline: "2024-02-10T14:00:00Z",
-        qualification: "Urgence Technique"
+        qualification: "Urgence Technique",
+        internalNotes: ["Périmètre de sécurité mis en place", "Expertise technique requise"],
+        timeline: [
+            { id: "e5", type: "status_change", content: "Ticket ouvert", author: "Système", timestamp: "2024-02-09T14:00:00Z", statusTo: "Open" },
+            { id: "e6", type: "escalation", content: "Délai SLA dépassé - Critique", author: "Système IA", timestamp: "2024-02-10T14:00:00Z", statusFrom: "In Progress", statusTo: "Escalated" }
+        ],
+        isArchived: false
     }
 ];

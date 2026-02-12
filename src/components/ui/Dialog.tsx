@@ -61,27 +61,28 @@ export function Dialog({
                             className
                         )}
                     >
-                        <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6">
-                            <div className="flex items-center justify-between">
+                        <button
+                            onClick={onClose}
+                            className="absolute right-4 top-4 z-50 rounded-full p-2 opacity-70 transition-opacity hover:opacity-100 hover:bg-slate-100/80 backdrop-blur-sm text-slate-500"
+                        >
+                            <X size={20} />
+                            <span className="sr-only">Close</span>
+                        </button>
+
+                        {(title || description) && (
+                            <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-6 pr-8">
                                 {title && (
-                                    <h2 className="text-xl font-bold tracking-tight text-slate-900">
+                                    <h2 className="text-xl font-bold tracking-tight text-slate-900 leading-none">
                                         {title}
                                     </h2>
                                 )}
-                                <button
-                                    onClick={onClose}
-                                    className="rounded-full p-1 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-slate-100"
-                                >
-                                    <X size={20} />
-                                    <span className="sr-only">Close</span>
-                                </button>
+                                {description && (
+                                    <p className="text-sm text-muted-foreground pt-1">
+                                        {description}
+                                    </p>
+                                )}
                             </div>
-                            {description && (
-                                <p className="text-sm text-muted-foreground">
-                                    {description}
-                                </p>
-                            )}
-                        </div>
+                        )}
 
                         {children}
                     </motion.div>

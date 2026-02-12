@@ -90,22 +90,22 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                "flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all group relative",
+                                "flex items-center gap-3 px-3.5 py-3 rounded-[1rem] transition-all group relative",
                                 isActive
-                                    ? "bg-slate-900 text-white shadow-lg shadow-slate-900/10 font-semibold"
-                                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-medium"
+                                    ? "bg-slate-900/5 text-slate-900 font-bold"
+                                    : "text-slate-400 hover:bg-slate-50 hover:text-slate-600 font-semibold"
                             )}
                         >
-                            <item.icon size={18} className={cn("transition-all duration-300", isActive ? "text-primary" : "text-slate-400 group-hover:text-slate-900")} strokeWidth={isActive ? 2.5 : 2} />
+                            <item.icon size={18} className={cn("transition-all duration-300", isActive ? "text-primary" : "text-slate-400 group-hover:text-slate-600")} strokeWidth={isActive ? 2.5 : 2} />
 
                             {!collapsed && (
-                                <span className="truncate text-xs animate-in slide-in-from-left-2 duration-300">
+                                <span className="truncate text-[11px] font-bold uppercase tracking-wide animate-in slide-in-from-left-2 duration-300">
                                     {item.label}
                                 </span>
                             )}
 
                             {isActive && !collapsed && (
-                                <div className="ml-auto w-1 h-1 rounded-full bg-primary" />
+                                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-sm shadow-primary/40" />
                             )}
                         </Link>
                     );
