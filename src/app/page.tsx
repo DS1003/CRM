@@ -27,7 +27,7 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedRole) {
-      alert("Please select a team hub profile to continue.");
+      alert("Veuillez sélectionner un profil d'équipe pour continuer.");
       return;
     }
     setIsLoading(true);
@@ -42,10 +42,10 @@ export default function LoginPage() {
   };
 
   const roles = [
-    { id: "executive", label: "Executive", color: "bg-emerald-500" },
-    { id: "sales", label: "Sales", color: "bg-blue-500" },
-    { id: "ops", label: "Operations", color: "bg-amber-500" },
-    { id: "tech", label: "Technical", color: "bg-indigo-500" },
+    { id: "executive", label: "Exécutif", color: "bg-emerald-500" },
+    { id: "sales", label: "Ventes", color: "bg-blue-500" },
+    { id: "ops", label: "Opérations", color: "bg-amber-500" },
+    { id: "tech", label: "Technique", color: "bg-indigo-500" },
   ];
 
   return (
@@ -68,10 +68,10 @@ export default function LoginPage() {
             </div>
 
             <h1 className="text-4xl font-bold leading-tight mb-6">
-              The OS for <span className="text-primary font-extrabold italic">Construction</span> & <span className="text-primary font-extrabold italic">Scale</span>.
+              L'OS pour la <span className="text-primary font-extrabold italic">Construction</span> & la <span className="text-primary font-extrabold italic">Croissance</span>.
             </h1>
             <p className="text-slate-400 text-lg">
-              Centralizing operations, sales, and CAD technical validation in one unified workspace.
+              Centralisez vos opérations, vos ventes et la validation technique CAO dans un espace de travail unique.
             </p>
           </div>
 
@@ -79,13 +79,13 @@ export default function LoginPage() {
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Building2 className="text-primary" size={24} />
-                <h3 className="font-bold">Project Hub</h3>
-                <p className="text-xs text-slate-500">Track milestones and CAD versions seamlessly.</p>
+                <h3 className="font-bold">Hub Projet</h3>
+                <p className="text-xs text-slate-500">Suivi des étapes et des versions CAO en toute simplicité.</p>
               </div>
               <div className="space-y-2">
                 <ShieldCheck className="text-primary" size={24} />
-                <h3 className="font-bold">Enterprise Grade</h3>
-                <p className="text-xs text-slate-500">Secure document management and role-based views.</p>
+                <h3 className="font-bold">Qualité Entreprise</h3>
+                <p className="text-xs text-slate-500">Gestion sécurisée des documents et vues basées sur les rôles.</p>
               </div>
             </div>
           </div>
@@ -104,13 +104,13 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900">Welcome Back</h2>
-            <p className="text-slate-500 text-sm mt-1">Select your team profile or enter credentials to continue.</p>
+            <h2 className="text-2xl font-bold text-slate-900">Bon retour</h2>
+            <p className="text-slate-500 text-sm mt-1">Sélectionnez votre profil ou entrez vos identifiants.</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Team Hub Profile</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1">Profil Hub d'équipe</label>
               <div className="grid grid-cols-2 gap-3">
                 {roles.map((role) => (
                   <Button
@@ -119,8 +119,8 @@ export default function LoginPage() {
                     variant="outline"
                     onClick={() => setSelectedRole(role.id)}
                     className={cn(
-                      "justify-start gap-2 h-12 transition-all border-slate-200",
-                      selectedRole === role.id && "border-primary bg-primary/5 ring-1 ring-primary"
+                      "justify-start gap-2 h-12 transition-all border-slate-200 text-slate-600",
+                      selectedRole === role.id && "border-primary bg-primary/5 ring-1 ring-primary text-primary"
                     )}
                   >
                     <div className={cn("w-2 h-2 rounded-full", role.color)}></div>
@@ -135,16 +135,16 @@ export default function LoginPage() {
                 <span className="w-full border-t border-slate-100"></span>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-slate-400">or use credentials</span>
+                <span className="bg-white px-2 text-slate-400">ou utiliser vos identifiants</span>
               </div>
             </div>
 
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Input placeholder="Email address" type="email" required className="h-11 border-slate-200" defaultValue="admin@nex-crm.io" />
+                <Input placeholder="Adresse Email" type="email" required className="h-11 border-slate-200" defaultValue="admin@nex-crm.io" />
               </div>
               <div className="space-y-1.5">
-                <Input placeholder="Password" type="password" required className="h-11 border-slate-200" defaultValue="••••••••" />
+                <Input placeholder="Mot de passe" type="password" required className="h-11 border-slate-200" defaultValue="••••••••" />
               </div>
             </div>
 
@@ -152,13 +152,13 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full h-11 bg-primary hover:bg-primary/95 shadow-lg shadow-primary/20 transition-all font-bold"
             >
-              {isLoading ? "Authenticating Workspace..." : "Sign in to Dashboard"}
+              {isLoading ? "Authentification de l'espace..." : "Se connecter au Tableau de bord"}
               {!isLoading && <ArrowRight size={18} className="ml-2" />}
             </Button>
           </form>
 
           <div className="mt-8 text-center text-[10px] text-slate-400 leading-relaxed">
-            By signing in, you agree to NexCRM's <span className="underline cursor-pointer">Terms of Service</span> and <span className="underline cursor-pointer">Privacy Policy</span>. Secured by AES-256 Hub Protection.
+            En vous connectant, vous acceptez les <span className="underline cursor-pointer">Conditions d'Utilisation</span> et la <span className="underline cursor-pointer">Politique de Confidentialité</span> de NexCRM. Sécurisé par AES-256.
           </div>
         </div>
       </div>

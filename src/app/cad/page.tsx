@@ -30,37 +30,37 @@ export default function CADModulePage() {
         <div className="space-y-8 animate-in fade-in duration-700">
             <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">CAD & Technical Validation</h1>
-                    <p className="text-muted-foreground mt-1">Review, version, and approve technical structural plans.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">CAO & Validation Technique</h1>
+                    <p className="text-muted-foreground mt-1">Examinez, versionnez et approuvez les plans structurels techniques.</p>
                 </div>
                 <div className="flex gap-3">
                     <Button variant="outline" className="gap-2 bg-white/50 border-slate-200">
                         <History size={18} />
-                        Version History
+                        Historique des Versions
                     </Button>
-                    <Button className="gap-2 bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20">
-                        Upload DWG / BCF
+                    <Button className="gap-2 bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 font-bold">
+                        Téléverser DWG / BCF
                     </Button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatsCardSimple
-                    label="Pending Approval"
+                    label="En attente"
                     value="8"
                     icon={Clock}
                     color="text-amber-500"
                     bgColor="bg-amber-50"
                 />
                 <StatsCardSimple
-                    label="Validated Q1"
+                    label="Validés T1"
                     value="142"
                     icon={CheckCircle2}
                     color="text-emerald-500"
                     bgColor="bg-emerald-50"
                 />
                 <StatsCardSimple
-                    label="Rejected/Revision"
+                    label="Rejetés / Révision"
                     value="12"
                     icon={XCircle}
                     color="text-rose-500"
@@ -71,17 +71,17 @@ export default function CADModulePage() {
             <Card className="card-premium">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                        <CardTitle>Technical Plans Repository</CardTitle>
-                        <CardDescription>All validated and pending structural plans linked to projects.</CardDescription>
+                        <CardTitle>Répertoire des Plans Techniques</CardTitle>
+                        <CardDescription>Tous les plans structurels validés et en attente liés aux projets.</CardDescription>
                     </div>
                     <div className="flex gap-4">
                         <div className="relative w-64">
                             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                            <Input placeholder="Search plans..." className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors text-sm" />
+                            <Input placeholder="Rechercher des plans..." className="pl-10 h-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors text-sm" />
                         </div>
                         <Button variant="outline" size="sm" className="h-10 border-slate-200 text-slate-600">
                             <Filter size={16} className="mr-2" />
-                            Filter
+                            Filtrer
                         </Button>
                     </div>
                 </CardHeader>
@@ -89,11 +89,11 @@ export default function CADModulePage() {
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="border-b text-left text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-                                <th className="py-4 pl-4">Plan Identification</th>
-                                <th className="py-4">Project</th>
+                                <th className="py-4 pl-4">Identification du Plan</th>
+                                <th className="py-4">Projet</th>
                                 <th className="py-4">Version</th>
-                                <th className="py-4">Status</th>
-                                <th className="py-4">Size</th>
+                                <th className="py-4">Statut</th>
+                                <th className="py-4">Taille</th>
                                 <th className="py-4 pr-4 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -107,12 +107,12 @@ export default function CADModulePage() {
                                             </div>
                                             <div>
                                                 <span className="font-bold text-sm block text-slate-800">{plan.name}</span>
-                                                <span className="text-[10px] text-slate-400 uppercase tracking-tight font-bold">ID: #CAD-{plan.id}</span>
+                                                <span className="text-[10px] text-slate-400 uppercase tracking-tight font-bold">ID: #CAO-{plan.id}</span>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="py-5">
-                                        <span className="text-xs font-bold text-slate-600">Bridgeport Comm. Center</span>
+                                        <span className="text-xs font-bold text-slate-600">Centre Comm. Bridgeport</span>
                                     </td>
                                     <td className="py-5">
                                         <Badge variant="secondary" className="font-bold text-[10px] px-2 py-0.5 border-slate-200 text-slate-500 bg-white shadow-sm">
@@ -122,7 +122,7 @@ export default function CADModulePage() {
                                     <td className="py-5">
                                         <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                                            <span className="text-xs font-bold text-emerald-600">Validated</span>
+                                            <span className="text-xs font-bold text-emerald-600">Validé</span>
                                         </div>
                                     </td>
                                     <td className="py-5 text-xs font-bold text-slate-400">{plan.size}</td>
@@ -135,7 +135,7 @@ export default function CADModulePage() {
                                                 <Download size={16} className="text-slate-500" />
                                             </Button>
                                             <Button variant="outline" size="sm" className="h-8 text-[9px] font-bold uppercase tracking-widest border-emerald-200 text-emerald-600 hover:bg-emerald-50 bg-emerald-50/50">
-                                                Re-Validate
+                                                Re-valider
                                             </Button>
                                         </div>
                                     </td>
@@ -149,8 +149,8 @@ export default function CADModulePage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <Card className="card-premium border-none bg-slate-50 shadow-sm border border-slate-100">
                     <CardHeader>
-                        <CardTitle className="text-lg">AI Collision Detection</CardTitle>
-                        <CardDescription>Automated structural integrity and interference analysis.</CardDescription>
+                        <CardTitle className="text-lg">Détection de Collision par IA</CardTitle>
+                        <CardDescription>Analyse automatisée de l'intégrité structurelle et des interférences.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
@@ -160,11 +160,11 @@ export default function CADModulePage() {
                                         <FileWarning size={24} />
                                     </div>
                                     <div>
-                                        <h5 className="font-bold text-sm text-slate-800">Hard Interference: HVAC vs structural beam</h5>
-                                        <p className="text-xs text-slate-500 mt-1 font-medium">Bridgeport Project - Section B2</p>
+                                        <h5 className="font-bold text-sm text-slate-800">Interférence majeure : CVC vs poutre</h5>
+                                        <p className="text-xs text-slate-500 mt-1 font-medium">Projet Bridgeport - Section B2</p>
                                     </div>
                                 </div>
-                                <Badge variant="destructive" className="animate-pulse font-bold tracking-wider text-[10px]">CRITICAL</Badge>
+                                <Badge variant="destructive" className="animate-pulse font-bold tracking-wider text-[10px]">CRITIQUE</Badge>
                             </div>
 
                             <div className="p-4 bg-white rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-emerald-300 transition-all shadow-sm">
@@ -173,11 +173,11 @@ export default function CADModulePage() {
                                         <ShieldCheck size={24} />
                                     </div>
                                     <div>
-                                        <h5 className="font-bold text-sm text-slate-800">Integrity Pass: Plumbing Layout</h5>
-                                        <p className="text-xs text-slate-500 mt-1 font-medium">Oakwood Villa - Ground Floor</p>
+                                        <h5 className="font-bold text-sm text-slate-800">Validation Intégrité : Réseau Plomberie</h5>
+                                        <p className="text-xs text-slate-500 mt-1 font-medium">Villa Oakwood - Rez-de-chaussée</p>
                                     </div>
                                 </div>
-                                <Badge variant="success" className="font-bold tracking-wider text-[10px]">ALL CLEAR</Badge>
+                                <Badge variant="success" className="font-bold tracking-wider text-[10px]">RAS</Badge>
                             </div>
                         </div>
                     </CardContent>
@@ -185,8 +185,8 @@ export default function CADModulePage() {
 
                 <Card className="card-premium overflow-hidden">
                     <CardHeader>
-                        <CardTitle className="text-lg">Recent Version Comments</CardTitle>
-                        <CardDescription>Feedback from technical directors and field engineers.</CardDescription>
+                        <CardTitle className="text-lg">Commentaires de Version Récents</CardTitle>
+                        <CardDescription>Retours des directeurs techniques et des ingénieurs terrain.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="divide-y divide-slate-50">
@@ -196,10 +196,10 @@ export default function CADModulePage() {
                                     <div className="flex-1">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-xs font-bold text-slate-900">Marco Rossi</span>
-                                            <span className="text-[10px] text-slate-400 font-bold uppercase">2h ago</span>
+                                            <span className="text-[10px] text-slate-400 font-bold uppercase">il y a 2h</span>
                                         </div>
                                         <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                                            "The revision on V2 seems to address the bearing load issues we saw last week. Proceed with validation."
+                                            "La révision sur la V2 semble corriger les problèmes de charge portante vus la semaine dernière. OK pour validation."
                                         </p>
                                     </div>
                                 </div>
@@ -210,10 +210,10 @@ export default function CADModulePage() {
                                     <div className="flex-1">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-xs font-bold text-slate-900">Jane Smith</span>
-                                            <span className="text-[10px] text-slate-400 font-bold uppercase">Yesterday</span>
+                                            <span className="text-[10px] text-slate-400 font-bold uppercase">Hier</span>
                                         </div>
                                         <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                                            "Need to clarify the electrical conduit routing on the South Wing. V1.5 is still showing the old path."
+                                            "Besoin de clarifier le passage des gaines électriques sur l'aile sud. La V1.5 montre encore l'ancien tracé."
                                         </p>
                                     </div>
                                 </div>

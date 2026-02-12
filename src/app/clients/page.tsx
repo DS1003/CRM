@@ -39,11 +39,11 @@ export default function ClientsPage() {
             <div className="flex justify-between items-end">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900">Clients & Prospects</h1>
-                    <p className="text-muted-foreground mt-1">Manage your customer database and lead interactions.</p>
+                    <p className="text-muted-foreground mt-1">Gérez votre base de données clients et les interactions avec les prospects.</p>
                 </div>
-                <Button className="gap-2 bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all" onClick={() => setIsModalOpen(true)}>
+                <Button className="gap-2 bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all font-bold" onClick={() => setIsModalOpen(true)}>
                     <Plus size={18} />
-                    New Client
+                    Nouveau Client
                 </Button>
             </div>
 
@@ -51,7 +51,7 @@ export default function ClientsPage() {
             <div className="flex gap-4 items-center bg-white/60 backdrop-blur-md p-2 rounded-2xl border border-slate-100 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.05)] px-4 mx-1">
                 <Search size={18} className="text-slate-400" />
                 <Input
-                    placeholder="Search clients, industries, or contacts..."
+                    placeholder="Rechercher des clients, secteurs ou contacts..."
                     className="border-none shadow-none focus-visible:ring-0 bg-transparent text-slate-700 placeholder:text-slate-400"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -59,7 +59,7 @@ export default function ClientsPage() {
                 <div className="h-6 w-px bg-slate-200 mx-2"></div>
                 <Button variant="ghost" size="sm" className="text-slate-500 hover:text-slate-900 gap-2 font-medium">
                     <Filter size={16} />
-                    Filter
+                    Filtrer
                 </Button>
             </div>
 
@@ -78,7 +78,7 @@ export default function ClientsPage() {
                                         <Building size={24} />
                                     </div>
                                     <Badge variant={client.status === "Active" ? "success" : "secondary"} className="mt-1">
-                                        {client.status}
+                                        {client.status === "Active" ? "Actif" : "Prospect"}
                                     </Badge>
                                 </div>
                                 <div className="mt-5">
@@ -99,17 +99,17 @@ export default function ClientsPage() {
                                     </div>
                                     <div className="flex items-center text-sm text-slate-500 gap-3 group-hover:text-slate-700 transition-colors">
                                         <MapPin size={14} className="text-slate-400" />
-                                        <span className="truncate">{client.address || "No address listed"}</span>
+                                        <span className="truncate">{client.address || "Aucune adresse"}</span>
                                     </div>
                                 </div>
 
                                 <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Active Projects</span>
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Projets Actifs</span>
                                         <span className="font-black text-lg text-slate-800">{client.projectsCount}</span>
                                     </div>
                                     <div className="flex flex-col items-end">
-                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Last Contact</span>
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Dernier Contact</span>
                                         <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 mt-1">
                                             <Calendar size={12} className="text-slate-400" />
                                             {client.lastInteraction}
@@ -127,12 +127,12 @@ export default function ClientsPage() {
                         <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                             <Search className="text-slate-300" size={24} />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-700">No clients found</h3>
+                        <h3 className="text-lg font-bold text-slate-700">Aucun client trouvé</h3>
                         <p className="text-slate-400 text-sm mt-1 max-w-xs mx-auto">
-                            We couldn't find any clients matching "{searchTerm}". Try adding a new client.
+                            Nous n'avons trouvé aucun client correspondant à "{searchTerm}". Essayez d'ajouter un nouveau client.
                         </p>
-                        <Button className="mt-6 gap-2" variant="outline" onClick={() => setIsModalOpen(true)}>
-                            <Plus size={16} /> Add New Client
+                        <Button className="mt-6 gap-2 font-bold" variant="outline" onClick={() => setIsModalOpen(true)}>
+                            <Plus size={16} /> Ajouter un client
                         </Button>
                     </div>
                 )}
