@@ -28,12 +28,14 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { mockProjects, mockDocuments, mockCommunications } from "@/lib/mock-data";
 import { cn, formatDate, formatCurrency } from "@/lib/utils";
+import { useApp } from "@/context/AppContext";
 
 type ProjectTab = "Statut" | "Chronologie" | "Documents & CAO" | "Tickets" | "Photos" | "SAV";
 
 export default function ProjectDetailsPage() {
     const { id } = useParams();
     const router = useRouter();
+    const { triggerAutomatedTicket } = useApp();
     const [activeTab, setActiveTab] = React.useState<ProjectTab>("Statut");
 
     const project = mockProjects.find(p => p.id === id) || mockProjects[0];
@@ -360,11 +362,29 @@ export default function ProjectDetailsPage() {
                             <Button variant="outline" className="w-full justify-start h-11 text-xs font-bold gap-3 hover:bg-slate-50 border-slate-100 shadow-sm transition-all group">
                                 <Camera size={16} className="text-slate-300 group-hover:text-primary transition-colors" /> Téléverser Photos Site
                             </Button>
-                            <Button variant="outline" className="w-full justify-start h-11 text-xs font-bold gap-3 hover:bg-slate-50 border-slate-100 shadow-sm transition-all group">
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start h-11 text-xs font-bold gap-3 hover:bg-slate-50 border-slate-100 shadow-sm transition-all group"
+                                onClick={() => triggerAutomatedTicket({
+                                    type: "Tech",
+                                    clientId: project.clientId,
+                                    clientName: project.clientName,
+                                    details: `Demande de revue CAO pour le projet ${project.name}`
+                                })}
+                            >
                                 <Layers size={16} className="text-slate-300 group-hover:text-primary transition-colors" /> Demander Revue CAO
                             </Button>
-                            <Button variant="outline" className="w-full justify-start h-11 text-xs font-bold gap-3 hover:bg-slate-50 border-slate-100 shadow-sm transition-all group">
-                                <FileText size={16} className="text-slate-300 group-hover:text-primary transition-colors" /> Générer PDF d'État
+                            <Button
+                                variant="outline"
+                                className="w-full justify-start h-11 text-xs font-bold gap-3 hover:bg-slate-50 border-slate-100 shadow-sm transition-all group"
+                                onClick={() => triggerAutomatedTicket({
+                                    type: "DocRequest",
+                                    clientId: project.clientId,
+                                    clientName: project.clientName,
+                                    details: `Demande de génération de documentation PDF pour le projet ${project.name}`
+                                })}
+                            >
+                                <FileText size={16} className="text-slate-300 group-hover:text-primary transition-colors" /> Demander Doc. Projet
                             </Button>
                             <Button variant="outline" className="w-full justify-start h-11 text-xs font-bold gap-3 hover:bg-slate-50 border-slate-100 shadow-sm transition-all group">
                                 <MessageSquare size={16} className="text-slate-300 group-hover:text-primary transition-colors" /> Notifier Participants

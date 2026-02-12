@@ -21,7 +21,8 @@ import {
     CheckCircle2,
     ArrowUpRight,
     TrendingUp,
-    User
+    User,
+    AlertTriangle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -29,19 +30,22 @@ import { Badge } from "@/components/ui/Badge";
 import { mockClients, mockProjects, mockCommunications, mockDocuments } from "@/lib/mock-data";
 import { cn, formatDate, formatCurrency } from "@/lib/utils";
 
-type TabType = "Overview" | "Contacts" | "Documents" | "Communications" | "Projects" | "Payments";
+import { useApp } from "@/context/AppContext";
+
+type TabType = "Vue d'ensemble" | "Contacts" | "Documents" | "Communications" | "Projets" | "Paiements";
 
 export default function ClientDetailsPage() {
     const { id } = useParams();
     const router = useRouter();
-    const [activeTab, setActiveTab] = React.useState<TabType>("Overview");
+    const { triggerAutomatedTicket } = useApp();
+    const [activeTab, setActiveTab] = React.useState<TabType>("Vue d'ensemble");
 
     const client = mockClients.find(c => c.id === id) || mockClients[0];
     const clientProjects = mockProjects.filter(p => p.clientId === client.id);
     const clientComms = mockCommunications.filter(c => c.clientId === client.id);
     const clientDocs = mockDocuments.filter(d => d.clientId === client.id);
 
-    const tabs: TabType[] = ["Overview", "Contacts", "Documents", "Communications", "Projects", "Payments"];
+    const tabs: TabType[] = ["Vue d'ensemble", "Contacts", "Documents", "Communications", "Projets", "Paiements"];
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -68,7 +72,7 @@ export default function ClientDetailsPage() {
                                 </Badge>
                             </div>
                             <div className="flex items-center gap-6 mt-3 text-sm text-slate-500 font-medium">
-                                <span className="flex items-center gap-1.5"><MapPin size={16} className="text-slate-400" /> {client.address}</span>
+                                <span className="flex items-center gap-1.5"><MapPin size={16} className="text-slate-400" /> {client.address || "Adresse non renseignée"}</span>
                                 <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
                                 <span className="flex items-center gap-1.5 font-bold text-primary"><Briefcase size={16} /> {client.industry}</span>
                             </div>
@@ -77,11 +81,19 @@ export default function ClientDetailsPage() {
                     <div className="flex gap-3">
                         <Button variant="outline" className="gap-2 bg-white border-slate-200 shadow-sm text-slate-600 hover:text-slate-900">
                             <ExternalLink size={16} />
-                            Public Portal
+                            Espace Client
                         </Button>
-                        <Button className="gap-2 bg-slate-900 text-white shadow-lg shadow-slate-900/20 hover:bg-slate-800">
-                            <PlusCircle size={16} />
-                            New Action
+                        <Button
+                            className="gap-2 bg-rose-600 text-white shadow-lg shadow-rose-900/20 hover:bg-rose-700 border-none"
+                            onClick={() => triggerAutomatedTicket({
+                                type: "Reclamation",
+                                clientId: client.id,
+                                clientName: client.name,
+                                details: `Incident signalé depuis la fiche client : ${client.name}`
+                            })}
+                        >
+                            <AlertTriangle size={16} />
+                            Signaler Incident
                         </Button>
                         <Button variant="ghost" size="icon" className="hover:bg-slate-100 rounded-full">
                             <MoreVertical size={20} className="text-slate-400" />
@@ -159,7 +171,7 @@ export default function ClientDetailsPage() {
             {/* Tab Content */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
-                    {activeTab === "Overview" && (
+                    {activeTab === "Vue d'ensemble" && (
                         <div className="space-y-8">
                             <Card className="card-premium">
                                 <CardHeader>
@@ -246,7 +258,7 @@ export default function ClientDetailsPage() {
                         </div>
                     )}
 
-                    {activeTab === "Projects" && (
+                    {activeTab === "Projets" && (
                         <div className="grid grid-cols-1 gap-4">
                             {clientProjects.map(project => (
                                 <Card key={project.id} className="card-premium group hover:border-primary/30 transition-all cursor-pointer">
@@ -300,8 +312,26 @@ export default function ClientDetailsPage() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-center mb-1">
-                                                <h4 className="font-bold text-sm text-slate-900 truncate">{comm.subject || `Message with ${comm.sender}`}</h4>
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{formatDate(comm.timestamp)}</span>
+                                                <h4 className="font-bold text-sm text-slate-900 truncate">{comm.subject || `Echange avec ${comm.sender}`}</h4>
+                                                <div className="flex items-center gap-3">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-7 text-[10px] font-bold uppercase tracking-widest text-rose-500 hover:text-rose-600 hover:bg-rose-50"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            triggerAutomatedTicket({
+                                                                type: "Reclamation",
+                                                                clientId: client.id,
+                                                                clientName: client.name,
+                                                                details: `Litige signalé depuis communication : ${comm.content}`
+                                                            });
+                                                        }}
+                                                    >
+                                                        Signaler Litige
+                                                    </Button>
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{formatDate(comm.timestamp)}</span>
+                                                </div>
                                             </div>
                                             <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed font-medium">
                                                 {comm.content}
@@ -314,15 +344,15 @@ export default function ClientDetailsPage() {
                     )}
 
                     {/* Placeholders for other tabs */}
-                    {["Contacts", "Documents", "Payments"].includes(activeTab) && (
+                    {["Contacts", "Documents", "Paiements"].includes(activeTab) && (
                         <div className="flex flex-col items-center justify-center py-20 text-slate-300 border-2 border-dashed border-slate-100 rounded-3xl bg-slate-50/30">
                             <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 transition-transform hover:scale-110 duration-300">
                                 <PlusCircle size={32} className="text-slate-300" />
                             </div>
-                            <h4 className="font-bold text-slate-400 tracking-widest uppercase text-sm">No {activeTab} yet</h4>
-                            <p className="text-xs mt-1 text-slate-400">This module is ready for production integration.</p>
+                            <h4 className="font-bold text-slate-400 tracking-widest uppercase text-sm">Aucun(e) {activeTab} pour le moment</h4>
+                            <p className="text-xs mt-1 text-slate-400">Ce module est prêt pour l'intégration production.</p>
                             <Button variant="outline" className="mt-6 gap-2 h-9 text-xs font-bold uppercase tracking-widest bg-white hover:bg-slate-50 text-slate-600 border-slate-200">
-                                <Plus size={14} /> Add First {activeTab.slice(0, -1)}
+                                <Plus size={14} /> Ajouter {activeTab.slice(0, -1)}
                             </Button>
                         </div>
                     )}

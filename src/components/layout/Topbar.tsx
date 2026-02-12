@@ -20,22 +20,43 @@ import {
     CheckCircle2,
     Clock,
     X,
-    Layout
+    Layout,
+    Building,
+    ArrowUpRight,
+    BarChart3
 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { Dialog } from "@/components/ui/Dialog";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function Topbar() {
     const router = useRouter();
-    const { user, logout, notifications, markNotificationAsRead, clearAllNotifications, updateRole } = useApp();
+    const {
+        user,
+        logout,
+        notifications,
+        markNotificationAsRead,
+        clearAllNotifications,
+        updateRole,
+        clients,
+        projects,
+        leads,
+        tickets
+    } = useApp();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isRoleOpen, setIsRoleOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+
+    // Search Logic
+    const filteredResults = searchQuery.length > 1 ? [
+        ...clients.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())).map(c => ({ ...c, type: 'Client', href: `/clients/${c.id}` })),
+        ...projects.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(p => ({ ...p, type: 'Projet', href: `/construction/${p.id}` })),
+        ...leads.filter(l => l.title.toLowerCase().includes(searchQuery.toLowerCase())).map(l => ({ ...l, type: 'Opportunité', href: `/sales` })),
+        ...tickets.filter(t => t.subject.toLowerCase().includes(searchQuery.toLowerCase())).map(t => ({ ...t, type: 'Ticket', href: `/tickets` })),
+    ].slice(0, 8) : [];
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -74,19 +95,109 @@ export function Topbar() {
 
     return (
         <header className="h-16 border-b border-slate-200/50 bg-white/70 backdrop-blur-md sticky top-0 z-30 px-6 flex items-center justify-between transition-all">
-            {/* Search Trigger - Minimalist */}
-            <div className="flex-1 max-w-lg">
-                <button
-                    onClick={() => setIsSearchOpen(true)}
-                    className="flex items-center gap-3 px-4 py-2 w-full rounded-xl bg-slate-50/50 border border-slate-200/50 text-slate-400 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all group"
-                >
-                    <Search size={16} className="group-hover:text-primary transition-colors" />
-                    <span className="text-xs font-medium">Rechercher...</span>
-                    <div className="ml-auto flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                        <kbd className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-white border border-slate-200">⌘</kbd>
-                        <kbd className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-white border border-slate-200">K</kbd>
-                    </div>
-                </button>
+            {/* Search Section - Anchored Dropdown */}
+            <div className="flex-1 max-w-lg relative group">
+                <div className={cn(
+                    "flex items-center gap-3 px-4 py-2 w-full rounded-xl bg-slate-50 border transition-all duration-300",
+                    isSearchOpen
+                        ? "bg-white border-primary shadow-lg ring-4 ring-primary/5"
+                        : "border-slate-200/50 text-slate-400 hover:bg-white hover:border-slate-300 hover:shadow-sm"
+                )}>
+                    <Search size={16} className={cn("transition-colors", isSearchOpen ? "text-primary" : "group-hover:text-primary")} />
+                    <input
+                        placeholder="Rechercher clients, projets, tickets..."
+                        className="bg-transparent border-none outline-none text-xs font-medium w-full text-slate-900 placeholder:text-slate-400"
+                        onFocus={() => setIsSearchOpen(true)}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {!isSearchOpen && (
+                        <div className="ml-auto flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                            <kbd className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-white border border-slate-200">⌘</kbd>
+                            <kbd className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-white border border-slate-200">K</kbd>
+                        </div>
+                    )}
+                    {isSearchOpen && (
+                        <button onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }} className="ml-auto p-1 hover:bg-slate-100 rounded-full">
+                            <X size={14} className="text-slate-400" />
+                        </button>
+                    )}
+                </div>
+
+                {/* Search Results Dropdown */}
+                <AnimatePresence>
+                    {isSearchOpen && (
+                        <>
+                            <div className="fixed inset-0 z-10" onClick={() => setIsSearchOpen(false)} />
+                            <motion.div
+                                initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                                className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl shadow-slate-200/50 z-40 overflow-hidden"
+                            >
+                                <div className="p-3 max-h-[450px] overflow-y-auto thin-scrollbar">
+                                    {searchQuery.length === 0 ? (
+                                        <div className="space-y-4 p-2">
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Actions Rapides</div>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <QuickAction icon={TrendingUp} label="Module Ventes" shortcut="S" onClick={() => { router.push("/sales"); updateRole("Ventes"); setIsSearchOpen(false); }} />
+                                                <QuickAction icon={Briefcase} label="Module Projets" shortcut="P" onClick={() => { router.push("/construction"); updateRole("Chef de projet"); setIsSearchOpen(false); }} />
+                                                <QuickAction icon={Layout} label="Tableau de bord" shortcut="D" onClick={() => { router.push("/dashboard"); setIsSearchOpen(false); }} />
+                                                <QuickAction icon={BarChart3} label="Rapports & IA" shortcut="R" onClick={() => { router.push("/reporting"); setIsSearchOpen(false); }} />
+                                            </div>
+                                        </div>
+                                    ) : searchQuery.length > 1 && filteredResults.length > 0 ? (
+                                        <div className="space-y-1">
+                                            {filteredResults.map((res: any, idx) => (
+                                                <button
+                                                    key={`${res.type}-${idx}`}
+                                                    onClick={() => {
+                                                        router.push(res.href);
+                                                        setIsSearchOpen(false);
+                                                        setSearchQuery("");
+                                                    }}
+                                                    className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all text-left group"
+                                                >
+                                                    <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-primary/5 transition-colors">
+                                                        {res.type === 'Client' && <Building size={18} />}
+                                                        {res.type === 'Projet' && <Briefcase size={18} />}
+                                                        {res.type === 'Opportunité' && <TrendingUp size={18} />}
+                                                        {res.type === 'Ticket' && <MessageSquare size={18} />}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-bold text-slate-900 truncate">{(res.name || res.title || res.subject)}</p>
+                                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{res.type}</p>
+                                                    </div>
+                                                    <ArrowUpRight size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-all mr-2" />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="p-12 text-center text-slate-400 space-y-3">
+                                            <Search size={40} className="mx-auto opacity-10" />
+                                            <div className="space-y-1">
+                                                <p className="text-sm font-bold text-slate-500 italic">Aucun résultat pour "{searchQuery}"</p>
+                                                <p className="text-[10px] font-medium uppercase tracking-widest text-slate-400">Essayez de rechercher un client ou un projet</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="bg-slate-50/50 p-3 border-t border-slate-100 flex items-center justify-between">
+                                    <div className="flex items-center gap-3 opacity-50">
+                                        <div className="flex items-center gap-1">
+                                            <kbd className="px-1.5 py-0.5 text-[9px] font-bold bg-white border border-slate-200 rounded text-slate-400">⏎</kbd>
+                                            <span className="text-[9px] font-bold uppercase tracking-tight">Sélectionner</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <kbd className="px-1.5 py-0.5 text-[9px] font-bold bg-white border border-slate-200 rounded text-slate-400">↑↓</kbd>
+                                            <span className="text-[9px] font-bold uppercase tracking-tight">Naviguer</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Right Side - Refined Actions */}
@@ -278,54 +389,6 @@ export function Topbar() {
                     </AnimatePresence>
                 </div>
             </div>
-
-            {/* Global Search Dialog - Premium Minimal */}
-            <Dialog
-                isOpen={isSearchOpen}
-                onClose={() => setIsSearchOpen(false)}
-                className="max-w-xl !p-0 bg-white/95 backdrop-blur-xl border-slate-200/60 overflow-hidden"
-            >
-                <div className="p-4 border-b border-slate-100 flex items-center gap-3">
-                    <Search className="text-slate-400" size={20} />
-                    <input
-                        autoFocus
-                        placeholder="Taper pour rechercher..."
-                        className="flex-1 bg-transparent border-none outline-none text-slate-900 font-medium placeholder:text-slate-300 h-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    <kbd className="px-2 py-1 text-[10px] font-bold text-slate-400 bg-slate-50 border border-slate-200 rounded-lg">ESC</kbd>
-                </div>
-
-                <div className="p-3 max-h-96 overflow-y-auto thin-scrollbar">
-                    {searchQuery.length === 0 ? (
-                        <div className="grid grid-cols-2 gap-2 p-1">
-                            <QuickAction icon={TrendingUp} label="Hub Ventes" shortcut="S" onClick={() => { updateRole("Hub Ventes"); setIsSearchOpen(false); }} />
-                            <QuickAction icon={Briefcase} label="Hub Projets" shortcut="P" onClick={() => { updateRole("Hub Projets"); setIsSearchOpen(false); }} />
-                            <QuickAction icon={Layout} label="Tableau de bord" shortcut="D" onClick={() => { router.push("/dashboard"); setIsSearchOpen(false); }} />
-                            <QuickAction icon={MessageSquare} label="Rapports" shortcut="R" onClick={() => { router.push("/reporting"); setIsSearchOpen(false); }} />
-                        </div>
-                    ) : (
-                        <div className="p-8 text-center text-slate-400 space-y-2">
-                            <Search size={32} className="mx-auto opacity-10" />
-                            <p className="text-xs font-semibold uppercase tracking-widest italic">Aucun résultat trouvé</p>
-                        </div>
-                    )}
-                </div>
-
-                <div className="bg-slate-50/50 p-3 border-t border-slate-100 flex items-center justify-between">
-                    <div className="flex items-center gap-3 opacity-50">
-                        <div className="flex items-center gap-1">
-                            <kbd className="px-1.5 py-0.5 text-[9px] font-bold bg-white border border-slate-200 rounded text-slate-400">⏎</kbd>
-                            <span className="text-[9px] font-bold uppercase tracking-tight">Sélectionner</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <kbd className="px-1.5 py-0.5 text-[9px] font-bold bg-white border border-slate-200 rounded text-slate-400">↑↓</kbd>
-                            <span className="text-[9px] font-bold uppercase tracking-tight">Naviguer</span>
-                        </div>
-                    </div>
-                </div>
-            </Dialog>
         </header>
     );
 }

@@ -10,12 +10,12 @@ export interface Client {
     name: string;
     email: string;
     phone: string;
-    company: string;
+    company?: string;
     industry: string;
-    status: "Active" | "Inactive" | "Lead";
+    status: "Active" | "Inactive" | "Lead" | "Pending";
     lastInteraction: string; // ISO Date
     projectsCount: number;
-    totalRevenue: number;
+    totalRevenue?: number;
     address?: string;
 }
 
@@ -24,7 +24,7 @@ export interface SaleLead {
     title: string;
     clientName: string;
     value: number;
-    stage: "Nouveau" | "Qualification" | "Proposition" | "Négociation" | "Contrat Signé" | "Perdu";
+    stage: "Nouveau" | "Qualification" | "Proposition" | "Négociation" | "Contrat Signé" | "Perdu" | "Prospect" | "Qualifié" | "Livré" | "Qualified" | "Negotiation" | "Contract Signed" | "Delivered";
     probability: number;
     expectedCloseDate: string;
 }
@@ -37,12 +37,15 @@ export interface Project {
     id: string;
     name: string;
     clientName: string;
+    clientId?: string;
     status: "Planning" | "In Progress" | "Delayed" | "Completed" | "On Hold";
     progress: number;
     startDate: string;
     endDate: string;
     budget: number;
+    spent?: number;
     manager: string;
+    description?: string;
 }
 
 export interface Notification {
@@ -123,6 +126,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setProjects(mockProjects as any[]);
         setTickets(mockTickets as any[]);
     }, []);
+
+    // Periodic SLA Check (Auto-Escalation)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            simulateEscalation();
+        }, 30000); // Every 30 seconds
+        return () => clearInterval(interval);
+    }, [tickets]);
 
     const login = (email: string, role: string) => {
         const newUser: User = {
