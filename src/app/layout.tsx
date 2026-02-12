@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "MODERNYS - Le bien être à tout prix",
-  description: "Next-generation CRM and ERP for modern enterprises.",
+  title: "NEXCARE - Excellence Opérationnelle",
+  description: "Next-generation CRM and ERP for high-performance service teams.",
 };
 
 export default function RootLayout({

@@ -94,32 +94,32 @@ export function Topbar() {
     ];
 
     return (
-        <header className="h-16 border-b border-slate-200/50 bg-white/70 backdrop-blur-md sticky top-0 z-30 px-6 flex items-center justify-between transition-all">
+        <header className="h-20 border-b border-slate-200/50 bg-white sticky top-0 z-30 px-8 flex items-center justify-between transition-all">
             {/* Search Section - Anchored Dropdown */}
-            <div className="flex-1 max-w-lg relative group">
+            <div className="flex-1 max-w-xl relative group">
                 <div className={cn(
-                    "flex items-center gap-3 px-4 py-2 w-full rounded-xl bg-slate-50 border transition-all duration-300",
+                    "flex items-center gap-4 px-5 py-2.5 w-full rounded-2xl bg-slate-50 border border-slate-200/60 transition-all duration-500",
                     isSearchOpen
-                        ? "bg-white border-primary shadow-lg ring-4 ring-primary/5"
-                        : "border-slate-200/50 text-slate-400 hover:bg-white hover:border-slate-300 hover:shadow-sm"
+                        ? "bg-white border-primary/40 shadow-xl shadow-primary/5 ring-4 ring-primary/5"
+                        : "text-slate-500 hover:bg-slate-100/50 hover:border-slate-300"
                 )}>
-                    <Search size={16} className={cn("transition-colors", isSearchOpen ? "text-primary" : "group-hover:text-primary")} />
+                    <Search size={18} className={cn("transition-colors duration-500", isSearchOpen ? "text-primary" : "group-hover:text-primary")} strokeWidth={2.5} />
                     <input
-                        placeholder="Rechercher clients, projets, tickets..."
-                        className="bg-transparent border-none outline-none text-xs font-medium w-full text-slate-900 placeholder:text-slate-400"
+                        placeholder="Rechercher clients, projets, flux..."
+                        className="bg-transparent border-none outline-none text-sm font-medium w-full text-slate-900 placeholder:text-slate-400"
                         onFocus={() => setIsSearchOpen(true)}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     {!isSearchOpen && (
-                        <div className="ml-auto flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                            <kbd className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-white border border-slate-200">⌘</kbd>
-                            <kbd className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-white border border-slate-200">K</kbd>
+                        <div className="ml-auto flex items-center gap-1.5 opacity-30 group-hover:opacity-100 transition-opacity">
+                            <kbd className="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-500 tracking-tighter">CMD</kbd>
+                            <kbd className="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-500">K</kbd>
                         </div>
                     )}
                     {isSearchOpen && (
-                        <button onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }} className="ml-auto p-1 hover:bg-slate-100 rounded-full">
-                            <X size={14} className="text-slate-400" />
+                        <button onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }} className="ml-auto p-1.5 hover:bg-white/10 rounded-full transition-colors">
+                            <X size={16} className="text-slate-400" />
                         </button>
                     )}
                 </div>

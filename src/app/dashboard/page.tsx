@@ -72,49 +72,65 @@ export default function DashboardPage() {
     };
 
     return (
-        <div className="relative min-h-[calc(100vh-5rem)]">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 bg-grid-pattern opacity-[0.2] pointer-events-none" />
+        <div className="relative min-h-[calc(100vh-5rem)] overflow-hidden">
+            {/* Ambient Background Elements - Subtle Life */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+                <motion.div
+                    animate={{
+                        opacity: [0.3, 0.5, 0.3],
+                        scale: [1, 1.1, 1],
+                    }}
+                    transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]"
+                />
+                <motion.div
+                    animate={{
+                        opacity: [0.2, 0.4, 0.2],
+                        scale: [1.1, 1, 1.1],
+                    }}
+                    transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                    className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-indigo-500/5 rounded-full blur-[120px]"
+                />
+                <div className="absolute inset-0 bg-grid-slate-100/[0.03] bg-[bottom_1px_center] [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+            </div>
 
-            <div className="relative animate-in fade-in duration-700 space-y-10">
+            <div className="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 space-y-10">
                 {/* Ultra Premium Header */}
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 pb-4">
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-1.5 bg-primary/80 rounded-full shadow-lg shadow-primary/20" />
-                            <motion.h1
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight"
-                            >
-                                Vue <span className="bg-gradient-to-r from-primary via-blue-600 to-indigo-600 bg-clip-text text-transparent">Exécutive</span>
-                            </motion.h1>
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-3 mb-1">
+                            <div className="h-1.5 w-8 bg-primary rounded-full" />
+                            <span className="text-[10px] font-bold text-primary uppercase tracking-[0.4em]">NexCare Executive</span>
                         </div>
-                        <p className="text-slate-500 text-lg font-semibold opacity-70 flex items-center gap-2">
-                            <CalendarDays size={20} className="text-slate-400" />
-                            Performance Stratégique • Q3 2024
-                        </p>
+                        <motion.h1
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-4xl font-medium tracking-tight text-slate-900"
+                        >
+                            Vue d'Ensemble <span className="text-slate-400 italic font-light">Q3 2024</span>
+                        </motion.h1>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4">
-                        <div className="h-12 w-[1px] bg-slate-200/40 mx-2 hidden xl:block" />
+                        <div className="flex -space-x-3 mr-4">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="h-10 w-10 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center overflow-hidden shadow-sm">
+                                    <img src={`https://i.pravatar.cc/150?u=${i}`} alt="user" className="h-full w-full object-cover" />
+                                </div>
+                            ))}
+                            <div className="h-10 w-10 rounded-full border-2 border-white bg-slate-900 flex items-center justify-center text-[10px] text-white font-bold shadow-sm">
+                                +12
+                            </div>
+                        </div>
                         <Button
                             variant="outline"
-                            className="h-12 w-12 p-0 rounded-2xl bg-white border-slate-200/60 text-slate-400 hover:text-primary hover:border-primary/20 shadow-sm transition-all"
+                            className="h-12 w-12 p-0 rounded-2xl bg-white/50 backdrop-blur-md border-slate-200/60 text-slate-400 hover:text-primary transition-all"
                         >
                             <Filter size={18} />
                         </Button>
                         <Button
-                            onClick={handleExport}
-                            variant="outline"
-                            className="bg-white border-slate-200/60 text-slate-600 font-bold h-12 px-6 rounded-2xl transition-all shadow-sm hover:bg-slate-50"
-                        >
-                            <ExternalLink size={18} className="mr-2" />
-                            Rapport
-                        </Button>
-                        <Button
                             onClick={() => setIsDealModalOpen(true)}
-                            className="bg-slate-900 hover:bg-slate-800 text-white font-bold h-12 px-8 rounded-2xl transition-all shadow-md group"
+                            className="bg-slate-900 hover:bg-slate-800 text-white font-bold h-12 px-8 rounded-2xl transition-all shadow-xl shadow-slate-200 group"
                         >
                             <Plus size={18} className="mr-2 group-hover:rotate-90 transition-transform" />
                             Nouvelle Opportunité
@@ -166,16 +182,13 @@ export default function DashboardPage() {
                         <Card className="card-premium overflow-hidden border-slate-200/50 shadow-sm">
                             <CardHeader className="border-b border-slate-50/50 pb-8 p-10">
                                 <div className="flex justify-between items-center">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                            <CardTitle className="text-2xl font-bold text-slate-900">Trajectoire Financière</CardTitle>
-                                        </div>
-                                        <CardDescription className="mt-1 font-semibold text-slate-400">Analyse du CA prévisionnel vs objectifs de croissance.</CardDescription>
+                                    <div className="space-y-1">
+                                        <CardTitle className="text-xl font-semibold text-slate-900">Trajectoire Financière</CardTitle>
+                                        <CardDescription className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Revenue Forecast vs Target</CardDescription>
                                     </div>
                                     <div className="flex gap-2.5">
-                                        <Badge variant="secondary" className="bg-slate-100/50 text-slate-500 border-none font-bold px-4 py-1.5 rounded-xl">2024</Badge>
-                                        <Badge className="bg-primary/10 text-primary border-none font-bold px-4 py-1.5 rounded-xl ring-1 ring-primary/10">CIBLE: 105%</Badge>
+                                        <Badge variant="outline" className="text-slate-400 border-slate-100 font-bold px-3 py-1 rounded-lg text-[9px]">2024</Badge>
+                                        <Badge className="bg-emerald-50 text-emerald-600 border-none font-bold px-3 py-1 rounded-lg text-[9px]">CIBLE: 105%</Badge>
                                     </div>
                                 </div>
                             </CardHeader>
@@ -374,12 +387,10 @@ export default function DashboardPage() {
                             <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-primary/10 rounded-full blur-[140px] -mr-48 -mt-48 transition-transform duration-[2000ms] group-hover:scale-125" />
 
                             <CardHeader className="relative z-10 pb-10 border-b border-white/5 p-10">
-                                <div className="flex items-center gap-3 mb-5">
-                                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse shadow-[0_0_15px_rgba(59,130,246,1)]" />
-                                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary/80">NexCare Insights</span>
+                                <div className="space-y-4">
+                                    <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-slate-500">NexCare Intelligence</span>
+                                    <CardTitle className="text-white text-2xl font-medium leading-tight">Analyses<br /><span className="text-slate-500 italic">Prédictives</span></CardTitle>
                                 </div>
-                                <CardTitle className="text-white text-3xl font-extrabold leading-tight tracking-tight">Intelligence<br />Prédictive</CardTitle>
-                                <CardDescription className="text-slate-500 font-semibold mt-3 italic">Analyses temps réel basées sur l'activité CRM.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-8 pt-10 p-10 relative z-10">
                                 <motion.div
