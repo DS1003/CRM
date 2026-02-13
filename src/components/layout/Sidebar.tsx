@@ -62,7 +62,7 @@ export function Sidebar({ collapsed, onCollapse }: SidebarProps) {
                         <img
                             src="https://modernys.immo/logo-white.png"
                             alt="NexCare"
-                            className="h-6 invert brightness-0 opacity-80"
+                            className="w-36"
                         />
                     </div>
                 )}
