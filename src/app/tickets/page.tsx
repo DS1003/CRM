@@ -34,7 +34,9 @@ import {
     Monitor,
     Smile,
     Frown,
-    StickyNote
+    StickyNote,
+    Pencil,
+    Trash
 } from "lucide-react";
 import {
     Ticket,
@@ -61,6 +63,7 @@ export default function TicketsPage() {
         simulateEscalation,
         updateTicket,
         addTicket,
+        deleteTicket,
         clients,
         triggerAutomatedTicket
     } = useApp();
@@ -69,6 +72,7 @@ export default function TicketsPage() {
     const [filterStatus, setFilterStatus] = useState<string>("All");
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
     const [processAction, setProcessAction] = useState<TicketStatus | null>(null);
@@ -164,6 +168,42 @@ export default function TicketsPage() {
         });
     };
 
+    const handleEditTicket = () => {
+        if (!selectedTicket || !newTicket.subject || !newTicket.description) return;
+
+        const client = clients.find(c => c.id === newTicket.clientId);
+
+        updateTicket(selectedTicket.id, {
+            ...newTicket,
+            clientName: client?.name || selectedTicket.clientName,
+        });
+
+        setIsEditModalOpen(false);
+        setSelectedTicket(null);
+    };
+
+    const handleDeleteTicket = (id: string) => {
+        if (window.confirm("Êtes-vous sûr de vouloir supprimer définitivement ce ticket ?")) {
+            deleteTicket(id);
+        }
+    };
+
+    const openEditModal = (ticket: Ticket) => {
+        setSelectedTicket(ticket);
+        setNewTicket({
+            clientId: ticket.clientId,
+            clientName: ticket.clientName,
+            subject: ticket.subject,
+            description: ticket.description,
+            priority: ticket.priority,
+            type: ticket.type,
+            channel: ticket.channel,
+            department: ticket.department as 'BO' | 'Serv Tech',
+            assignedTo: ticket.assignedTo
+        });
+        setIsEditModalOpen(true);
+    };
+
     const handleUpdateStatus = () => {
         if (!selectedTicket || !processAction) return;
 
@@ -217,6 +257,7 @@ export default function TicketsPage() {
             case "NC": return <ShieldAlert size={14} />;
             case "Document": return <FileText size={14} />;
             case "Payment": return <CreditCard size={14} />;
+            default: return <FileText size={14} />;
         }
     };
 
@@ -226,6 +267,7 @@ export default function TicketsPage() {
             case "WhatsApp": return <Smartphone size={14} />;
             case "Phone": return <Phone size={14} />;
             case "BO": return <Monitor size={14} />;
+            default: return <Monitor size={14} />;
         }
     };
 
@@ -244,7 +286,20 @@ export default function TicketsPage() {
                         Monitor SLA
                     </Button>
                     <Button
-                        onClick={() => setIsCreateModalOpen(true)}
+                        onClick={() => {
+                            setNewTicket({
+                                clientId: "",
+                                clientName: "",
+                                subject: "",
+                                description: "",
+                                priority: "Medium",
+                                type: "Technical",
+                                channel: "BO",
+                                department: "BO",
+                                assignedTo: ""
+                            });
+                            setIsCreateModalOpen(true);
+                        }}
                         className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all"
                     >
                         Nouveau Flux
@@ -297,7 +352,7 @@ export default function TicketsPage() {
                                         <th className="py-5 px-4 font-bold">Classification</th>
                                         <th className="py-5 px-4 font-bold">Échéance SLA</th>
                                         <th className="py-5 px-4 font-bold">Statut</th>
-                                        <th className="py-5 px-8 text-right font-bold">Détails</th>
+                                        <th className="py-5 px-8 text-right font-bold">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50/50">
@@ -363,18 +418,42 @@ export default function TicketsPage() {
                                                             size="sm"
                                                             className="h-9 w-9 p-0 hover:bg-slate-100 hover:text-primary rounded-xl transition-all"
                                                             onClick={() => { setSelectedTicket(ticket); setIsDetailModalOpen(true); }}
+                                                            title="Détails"
                                                         >
                                                             <ChevronRight size={18} />
                                                         </Button>
-                                                        {isAdmin && !ticket.isArchived && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="h-9 w-9 p-0 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
-                                                                onClick={() => handleArchive(ticket.id)}
-                                                            >
-                                                                <Archive size={16} />
-                                                            </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-9 w-9 p-0 hover:bg-slate-100 hover:text-amber-500 rounded-xl transition-all"
+                                                            onClick={() => openEditModal(ticket)}
+                                                            title="Modifier"
+                                                        >
+                                                            <Pencil size={15} />
+                                                        </Button>
+                                                        {isAdmin && (
+                                                            <>
+                                                                {!ticket.isArchived && (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="h-9 w-9 p-0 text-slate-400 hover:text-indigo-500 hover:bg-slate-100 rounded-xl transition-all"
+                                                                        onClick={() => handleArchive(ticket.id)}
+                                                                        title="Archiver"
+                                                                    >
+                                                                        <Archive size={15} />
+                                                                    </Button>
+                                                                )}
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-9 w-9 p-0 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                                                                    onClick={() => handleDeleteTicket(ticket.id)}
+                                                                    title="Supprimer"
+                                                                >
+                                                                    <Trash size={15} />
+                                                                </Button>
+                                                            </>
                                                         )}
                                                     </div>
                                                 </td>
@@ -482,99 +561,281 @@ export default function TicketsPage() {
                 onClose={() => setIsCreateModalOpen(false)}
                 title="Ouverture Nouveau Flux SAV"
                 description="Initialisation d'un ticket omnicanal pour le service support."
-                className="max-w-2xl rounded-3xl"
+                className="max-w-3xl rounded-[2.5rem] border-none shadow-2xl"
             >
-                <div className="grid grid-cols-2 gap-6 py-6">
-                    <div className="space-y-5">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Client émetteur</label>
-                            <select
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 h-11 text-sm font-semibold focus:bg-white focus:ring-4 focus:ring-primary/5 outline-none transition-all appearance-none"
-                                value={newTicket.clientId}
-                                onChange={(e) => setNewTicket({ ...newTicket, clientId: e.target.value })}
-                            >
-                                <option value="">Sélect. Client...</option>
-                                {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Titre de la requête</label>
-                            <Input
-                                placeholder="ex: Problème structurel..."
-                                className="bg-slate-50 border-slate-200 h-11 text-sm font-semibold rounded-2xl focus:bg-white"
-                                value={newTicket.subject}
-                                onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Type</label>
+                <div className="py-8 space-y-8">
+                    {/* Primary Info Section */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-1">
+                        <div className="space-y-6">
+                            <div className="space-y-2.5">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                    <UserPlus size={12} className="text-primary/60" />
+                                    Client émetteur
+                                </label>
                                 <select
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 h-11 text-sm font-semibold"
-                                    value={newTicket.type}
-                                    onChange={(e) => setNewTicket({ ...newTicket, type: e.target.value as TicketType })}
+                                    className="w-full bg-slate-50 border border-slate-100/80 rounded-2xl px-5 h-12 text-sm font-semibold focus:bg-white focus:ring-4 focus:ring-primary/5 outline-none transition-all appearance-none text-slate-700 shadow-sm"
+                                    value={newTicket.clientId}
+                                    onChange={(e) => setNewTicket({ ...newTicket, clientId: e.target.value })}
                                 >
-                                    <option value="Technical">Technique</option>
-                                    <option value="Complaint">Réclamation</option>
-                                    <option value="NC">Non-Conformité</option>
-                                    <option value="Document">Documentaire</option>
+                                    <option value="">Sélect. Client...</option>
+                                    {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                 </select>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Urgence (SLA)</label>
-                                <select
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 h-11 text-sm font-semibold"
-                                    value={newTicket.priority}
-                                    onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value as TicketPriority })}
-                                >
-                                    <option value="High">Haute (4h)</option>
-                                    <option value="Medium">Moyenne (24h)</option>
-                                    <option value="Low">Basse (72h)</option>
-                                </select>
+
+                            <div className="space-y-2.5">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                    <MessageSquare size={12} className="text-primary/60" />
+                                    Titre de la requête
+                                </label>
+                                <Input
+                                    placeholder="ex: Problème structurel..."
+                                    className="bg-slate-50 border-slate-100/80 h-12 text-sm font-semibold rounded-2xl focus:bg-white shadow-sm"
+                                    value={newTicket.subject}
+                                    onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                        <Zap size={12} className="text-primary/60" />
+                                        Classification
+                                    </label>
+                                    <select
+                                        className="w-full bg-slate-50 border border-slate-100/80 rounded-2xl px-4 h-12 text-sm font-semibold text-slate-700 shadow-sm"
+                                        value={newTicket.type}
+                                        onChange={(e) => setNewTicket({ ...newTicket, type: e.target.value as TicketType })}
+                                    >
+                                        <option value="Technical">Technique</option>
+                                        <option value="Complaint">Réclamation</option>
+                                        <option value="NC">Non-Conformité</option>
+                                        <option value="Document">Documentaire</option>
+                                        <option value="Payment">Paiement</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                        <AlertTriangle size={12} className="text-primary/60" />
+                                        Urgence (SLA)
+                                    </label>
+                                    <select
+                                        className="w-full bg-slate-50 border border-slate-100/80 rounded-2xl px-4 h-12 text-sm font-semibold text-slate-700 shadow-sm"
+                                        value={newTicket.priority}
+                                        onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value as TicketPriority })}
+                                    >
+                                        <option value="High">Haute (4h)</option>
+                                        <option value="Medium">Moyenne (24h)</option>
+                                        <option value="Low">Basse (72h)</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="space-y-5">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Description détaillée</label>
-                            <textarea
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm font-semibold min-h-[155px] outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all text-slate-900"
-                                placeholder="Détaillez l'incident ou la demande..."
-                                value={newTicket.description}
-                                onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Canal</label>
-                                <select
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 h-11 text-sm font-semibold"
-                                    value={newTicket.channel}
-                                    onChange={(e) => setNewTicket({ ...newTicket, channel: e.target.value as TicketChannel })}
-                                >
-                                    <option value="BO">Back Office</option>
-                                    <option value="Email">Email</option>
-                                    <option value="WhatsApp">WhatsApp</option>
-                                    <option value="Phone">Téléphone</option>
-                                </select>
+
+                        <div className="space-y-6">
+                            <div className="space-y-2.5">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                    <FileText size={12} className="text-primary/60" />
+                                    Description détaillée
+                                </label>
+                                <textarea
+                                    className="w-full bg-slate-50 border border-slate-100/80 rounded-2xl px-5 py-5 text-sm font-semibold min-h-[165px] outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all text-slate-600 shadow-sm leading-relaxed"
+                                    placeholder="Détaillez l'incident ou la demande..."
+                                    value={newTicket.description}
+                                    onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                                />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Service</label>
-                                <select
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 h-11 text-sm font-semibold"
-                                    value={newTicket.department}
-                                    onChange={(e) => setNewTicket({ ...newTicket, department: e.target.value as 'BO' | 'Serv Tech' })}
-                                >
-                                    <option value="BO">BO Admin</option>
-                                    <option value="Serv Tech">Service Technique</option>
-                                </select>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                        <Smartphone size={12} className="text-primary/60" />
+                                        Canal
+                                    </label>
+                                    <select
+                                        className="w-full bg-slate-50 border border-slate-100/80 rounded-2xl px-4 h-12 text-sm font-semibold text-slate-700 shadow-sm"
+                                        value={newTicket.channel}
+                                        onChange={(e) => setNewTicket({ ...newTicket, channel: e.target.value as TicketChannel })}
+                                    >
+                                        <option value="BO">Back Office</option>
+                                        <option value="Email">Email</option>
+                                        <option value="WhatsApp">WhatsApp</option>
+                                        <option value="Phone">Téléphone</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                        <Briefcase size={12} className="text-primary/60" />
+                                        Département
+                                    </label>
+                                    <select
+                                        className="w-full bg-slate-50 border border-slate-100/80 rounded-2xl px-4 h-12 text-sm font-semibold text-slate-700 shadow-sm"
+                                        value={newTicket.department}
+                                        onChange={(e) => setNewTicket({ ...newTicket, department: e.target.value as 'BO' | 'Serv Tech' })}
+                                    >
+                                        <option value="BO">BO Admin</option>
+                                        <option value="Serv Tech">Service Technique</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <DialogFooter className="border-t border-slate-100/60 pt-6">
-                    <Button variant="ghost" onClick={() => setIsCreateModalOpen(false)} className="rounded-xl font-semibold">Annuler</Button>
-                    <Button onClick={handleCreateTicket} className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 rounded-xl h-11">Activer le Ticket</Button>
+                <DialogFooter className="border-t border-slate-50 pt-8 pb-2">
+                    <Button
+                        variant="ghost"
+                        onClick={() => setIsCreateModalOpen(false)}
+                        className="rounded-xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-all h-12 px-8"
+                    >
+                        Abandonner
+                    </Button>
+                    <Button
+                        onClick={handleCreateTicket}
+                        className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-10 rounded-2xl h-12 text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                        Initialiser le Flux
+                    </Button>
+                </DialogFooter>
+            </Dialog>
+
+            {/* Edit Ticket Modal */}
+            <Dialog
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                title="Modification du Flux SAV"
+                description="Mise à jour des informations structurelles du ticket."
+                className="max-w-3xl rounded-[2.5rem] border-none shadow-2xl"
+            >
+                <div className="py-8 space-y-8">
+                    {/* Primary Info Section */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-1">
+                        <div className="space-y-6">
+                            <div className="space-y-2.5">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                    <UserPlus size={12} className="text-primary/60" />
+                                    Client émetteur
+                                </label>
+                                <select
+                                    className="w-full bg-slate-50 border border-slate-100/80 rounded-2xl px-5 h-12 text-sm font-semibold focus:bg-white focus:ring-4 focus:ring-primary/5 outline-none transition-all appearance-none text-slate-700 shadow-sm"
+                                    value={newTicket.clientId}
+                                    onChange={(e) => setNewTicket({ ...newTicket, clientId: e.target.value })}
+                                >
+                                    <option value="">Sélect. Client...</option>
+                                    {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="space-y-2.5">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                    <MessageSquare size={12} className="text-primary/60" />
+                                    Titre de la requête
+                                </label>
+                                <Input
+                                    placeholder="ex: Problème structurel..."
+                                    className="bg-slate-50 border-slate-100/80 h-12 text-sm font-semibold rounded-2xl focus:bg-white shadow-sm"
+                                    value={newTicket.subject}
+                                    onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                        <Zap size={12} className="text-primary/60" />
+                                        Classification
+                                    </label>
+                                    <select
+                                        className="w-full bg-slate-50 border border-slate-100/80 rounded-2xl px-4 h-12 text-sm font-semibold text-slate-700 shadow-sm"
+                                        value={newTicket.type}
+                                        onChange={(e) => setNewTicket({ ...newTicket, type: e.target.value as TicketType })}
+                                    >
+                                        <option value="Technical">Technique</option>
+                                        <option value="Complaint">Réclamation</option>
+                                        <option value="NC">Non-Conformité</option>
+                                        <option value="Document">Documentaire</option>
+                                        <option value="Payment">Paiement</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                        <AlertTriangle size={12} className="text-primary/60" />
+                                        Urgence (SLA)
+                                    </label>
+                                    <select
+                                        className="w-full bg-slate-50 border border-slate-100/80 rounded-2xl px-4 h-12 text-sm font-semibold text-slate-700 shadow-sm"
+                                        value={newTicket.priority}
+                                        onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value as TicketPriority })}
+                                    >
+                                        <option value="High">Haute (4h)</option>
+                                        <option value="Medium">Moyenne (24h)</option>
+                                        <option value="Low">Basse (72h)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="space-y-2.5">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                    <FileText size={12} className="text-primary/60" />
+                                    Description détaillée
+                                </label>
+                                <textarea
+                                    className="w-full bg-slate-50 border border-slate-100/80 rounded-2xl px-5 py-5 text-sm font-semibold min-h-[165px] outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 transition-all text-slate-600 shadow-sm leading-relaxed"
+                                    placeholder="Détaillez l'incident ou la demande..."
+                                    value={newTicket.description}
+                                    onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                        <Smartphone size={12} className="text-primary/60" />
+                                        Canal
+                                    </label>
+                                    <select
+                                        className="w-full bg-slate-50 border border-slate-100/80 rounded-2xl px-4 h-12 text-sm font-semibold text-slate-700 shadow-sm"
+                                        value={newTicket.channel}
+                                        onChange={(e) => setNewTicket({ ...newTicket, channel: e.target.value as TicketChannel })}
+                                    >
+                                        <option value="BO">Back Office</option>
+                                        <option value="Email">Email</option>
+                                        <option value="WhatsApp">WhatsApp</option>
+                                        <option value="Phone">Téléphone</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex items-center gap-2 px-1">
+                                        <Briefcase size={12} className="text-primary/60" />
+                                        Département
+                                    </label>
+                                    <select
+                                        className="w-full bg-slate-50 border border-slate-100/80 rounded-2xl px-4 h-12 text-sm font-semibold text-slate-700 shadow-sm"
+                                        value={newTicket.department}
+                                        onChange={(e) => setNewTicket({ ...newTicket, department: e.target.value as 'BO' | 'Serv Tech' })}
+                                    >
+                                        <option value="BO">BO Admin</option>
+                                        <option value="Serv Tech">Service Technique</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <DialogFooter className="border-t border-slate-50 pt-8 pb-2">
+                    <Button
+                        variant="ghost"
+                        onClick={() => setIsEditModalOpen(false)}
+                        className="rounded-xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-all h-12 px-8"
+                    >
+                        Annuler
+                    </Button>
+                    <Button
+                        onClick={handleEditTicket}
+                        className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-10 rounded-2xl h-12 text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                        Enregistrer les Modifications
+                    </Button>
                 </DialogFooter>
             </Dialog>
 

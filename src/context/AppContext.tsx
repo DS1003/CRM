@@ -86,6 +86,7 @@ interface AppContextType {
     tickets: Ticket[];
     addTicket: (ticket: Omit<Ticket, "id" | "timeline" | "internalNotes" | "isArchived">) => void;
     updateTicket: (id: string, updates: Partial<Ticket>) => void;
+    deleteTicket: (id: string) => void;
     simulateEscalation: () => void;
     triggerAutomatedTicket: (event: {
         type: "NC" | "Reclamation" | "Tech" | "DocRequest" | "MailBO";
@@ -279,6 +280,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }));
     };
 
+    const deleteTicket = (id: string) => {
+        setTickets((prev) => prev.filter((t) => t.id !== id));
+        setNotifications(prev => [{
+            id: Math.random().toString(36).substr(2, 9),
+            title: "Ticket Supprimé",
+            description: `Le ticket ${id} a été retiré du système.`,
+            time: "À l'instant",
+            type: "system",
+            read: false
+        }, ...prev]);
+    };
+
     const simulateEscalation = () => {
         setTickets((prev) => prev.map((t) => {
             const isOverdue = new Date(t.slaDeadline) < new Date();
@@ -399,6 +412,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             tickets,
             addTicket,
             updateTicket,
+            deleteTicket,
             simulateEscalation,
             triggerAutomatedTicket
         }}>
