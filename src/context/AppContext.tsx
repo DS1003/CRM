@@ -114,17 +114,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const savedUser = localStorage.getItem("nexcare_user");
         if (savedUser) {
             setUser(JSON.parse(savedUser));
-        } else {
-            // Default user
-            const defaultUser: User = {
-                id: "AFK1",
-                name: "Astou Fall Kane",
-                email: "astou@nexcare.sn",
-                role: "Admin",
-                avatar: "AF"
-            };
-            setUser(defaultUser);
-            localStorage.setItem("nexcare_user", JSON.stringify(defaultUser));
         }
 
         // Hydrate mock data

@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn(inter.className, "bg-slate-50/50 min-h-screen text-slate-900")}>
+      <body className={cn(inter.className, "bg-slate-50/50 min-h-screen text-slate-900")} suppressHydrationWarning={true}>
         <AppProvider>
           <ClientLayout>{children}</ClientLayout>
         </AppProvider>
