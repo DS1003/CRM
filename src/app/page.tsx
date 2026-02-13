@@ -18,6 +18,8 @@ import {
   Cpu,
   ChevronRight,
   TrendingUp,
+  Bot,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -66,10 +68,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex overflow-hidden font-sans selection:bg-primary/30 selection:text-primary">
+    <div className="relative h-screen w-full flex overflow-hidden font-sans selection:bg-primary/30 selection:text-primary">
       <AnimatePresence mode="wait">
         {!isLoading ? (
-          <div className="w-full h-full flex flex-col lg:flex-row shadow-2xl overflow-hidden min-h-screen">
+          <div className="w-full h-full flex flex-col lg:flex-row shadow-2xl overflow-hidden">
 
             {/* LEFT SIDE - ELABORATE VISUALS (Dark & Vibrant) */}
             <motion.div
@@ -103,7 +105,7 @@ export default function LoginPage() {
                     transition={{ delay: 0.2 }}
                     src="https://modernys.immo/logo-white.png"
                     alt="NexCare"
-                    className="h-8 opacity-90"
+                    className="h-14 opacity-90"
                   />
                   <motion.h2
                     initial={{ opacity: 0, y: 20 }}
@@ -177,6 +179,34 @@ export default function LoginPage() {
                     </div>
                     <span className="text-[10px] font-bold text-white">+12 Projets</span>
                   </motion.div>
+
+                  {/* Card 4: AI Integrated */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8, x: 30 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    transition={{ delay: 1.1, duration: 0.8 }}
+                    className="absolute bottom-[20%] right-[10%] w-40 bg-white/[0.05] backdrop-blur-xl border border-white/10 p-3 rounded-2xl shadow-2xl flex items-center gap-3 z-10"
+                  >
+                    <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400"><Bot size={16} /></div>
+                    <div>
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">IA Native</div>
+                      <div className="text-sm font-bold text-white">Active</div>
+                    </div>
+                  </motion.div>
+
+                  {/* Card 5: Chatbot */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ delay: 1.3, duration: 0.8 }}
+                    className="absolute top-[25%] left-[5%] w-44 bg-white/[0.05] backdrop-blur-xl border border-white/10 p-3 rounded-2xl shadow-2xl flex items-center gap-3 z-0"
+                  >
+                    <div className="p-2 bg-orange-500/20 rounded-lg text-orange-400"><MessageSquare size={16} /></div>
+                    <div>
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Chatbot</div>
+                      <div className="text-sm font-bold text-white">En ligne</div>
+                    </div>
+                  </motion.div>
                 </div>
               </div>
             </motion.div>
@@ -187,35 +217,55 @@ export default function LoginPage() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ x: 100, opacity: 0 }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full lg:w-[55%] bg-slate-50 flex flex-col justify-center items-center p-8 lg:p-24 relative"
+              className="w-full lg:w-[55%] bg-white flex flex-col justify-center items-center p-8 lg:p-12 relative overflow-hidden"
             >
-              <div className="w-full max-w-sm space-y-8">
-                <div className="space-y-2 text-center lg:text-left">
-                  <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Espace Membre</h1>
-                  <p className="text-sm text-slate-500 font-medium">Authentifiez-vous pour accéder au dashboard.</p>
+              {/* Subtle Background Animations */}
+              <div className="absolute inset-0 pointer-events-none">
+                <motion.div
+                  animate={{
+                    scale: [1, 1.1, 1],
+                    rotate: [0, 90, 0],
+                  }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  className="absolute -top-[20%] -right-[20%] w-[80%] h-[80%] bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-full blur-[200px]"
+                />
+                <motion.div
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    rotate: [0, -90, 0],
+                  }}
+                  transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                  className="absolute -bottom-[20%] -left-[20%] w-[80%] h-[80%] bg-gradient-to-tr from-sky-500/20 to-emerald-500/20 rounded-full blur-[250px]"
+                />
+              </div>
+
+              <div className="w-full max-w-sm space-y-10 relative z-10">
+                <div className="space-y-3">
+                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Bienvenue</h1>
+                  <p className="text-base text-slate-500 font-medium">Connectez-vous à votre espace NexCare.</p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div className="space-y-4">
                     <div className="space-y-2 group">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1 transition-colors group-focus-within:text-primary">Identifiant</label>
+                      <label className="text-xs font-semibold text-slate-900 ml-1">Email professionnel</label>
                       <Input
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="h-12 bg-white border-slate-200 text-slate-900 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-medium"
+                        className="h-14 bg-slate-50 border-slate-100 text-slate-900 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all font-medium text-base shadow-sm"
                         placeholder="nom@nexcare.io"
                       />
                     </div>
                     <div className="space-y-2 group">
                       <div className="flex justify-between items-center ml-1">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest transition-colors group-focus-within:text-primary">Mot de Passe</label>
-                        <a href="#" className="text-[10px] font-bold text-primary hover:text-primary/80 uppercase tracking-wide">Oublié ?</a>
+                        <label className="text-xs font-semibold text-slate-900">Mot de passe</label>
+                        <a href="#" className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors">Mot de passe oublié ?</a>
                       </div>
                       <Input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="h-12 bg-white border-slate-200 text-slate-900 rounded-xl focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-medium"
+                        className="h-14 bg-slate-50 border-slate-100 text-slate-900 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all font-medium text-base shadow-sm"
                         placeholder="••••••••"
                       />
                     </div>
@@ -230,10 +280,10 @@ export default function LoginPage() {
                           type="button"
                           onClick={() => setSelectedRole(role)}
                           className={cn(
-                            "h-9 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all border",
+                            "h-10 rounded-xl text-xs font-bold transition-all border",
                             selectedRole === role
-                              ? "bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/10"
-                              : "bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700"
+                              ? "bg-slate-900 text-white border-slate-900 shadow-md"
+                              : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
                           )}
                         >
                           {role}
@@ -244,25 +294,27 @@ export default function LoginPage() {
 
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/20 mt-6 flex items-center justify-center gap-2 uppercase tracking-widest text-[10px] transition-all"
+                    className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-xl shadow-slate-900/20 mt-8 flex items-center justify-center gap-3 text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    Connexion Sécurisée
-                    <ArrowRight size={14} />
+                    Se connecter
+                    <ArrowRight size={18} />
                   </Button>
                 </form>
 
-                <div className="flex items-center gap-4 py-6">
-                  <div className="h-px bg-slate-200 flex-1" />
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ou continuer avec</span>
-                  <div className="h-px bg-slate-200 flex-1" />
+                <div className="flex items-center gap-4 py-8">
+                  <div className="h-px bg-slate-100 flex-1" />
+                  <span className="text-xs font-semibold text-slate-400">Ou continuer avec</span>
+                  <div className="h-px bg-slate-100 flex-1" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <button className="h-10 border border-slate-200 bg-white rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
-                    <span className="text-xs font-bold text-slate-600">Microsoft</span>
+                  <button className="h-12 border border-slate-200 bg-white rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-50 hover:border-slate-300 transition-all font-semibold text-slate-700 text-sm">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+                    Google
                   </button>
-                  <button className="h-10 border border-slate-200 bg-white rounded-lg flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
-                    <span className="text-xs font-bold text-slate-600">Google</span>
+                  <button className="h-12 border border-slate-200 bg-white rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-50 hover:border-slate-300 transition-all font-semibold text-slate-700 text-sm">
+                    <img src="https://www.svgrepo.com/show/452062/microsoft.svg" alt="Microsoft" className="w-5 h-5" />
+                    Microsoft
                   </button>
                 </div>
               </div>
