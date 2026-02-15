@@ -1,10 +1,42 @@
-import { Client, Project, SaleLead, Communication, Document, User, Ticket } from "@/types";
+import { Client, Project, SaleLead, Communication, Document, User, Ticket, Motif } from "@/types";
 
 export const mockUsers: User[] = [
     { id: "1", name: "Alex Rivera", email: "alex@company.com", role: "Admin", avatar: "https://i.pravatar.cc/150?u=1" },
-    { id: "2", name: "Sarah Chen", email: "sarah@company.com", role: "Ventes", avatar: "https://i.pravatar.cc/150?u=2" },
-    { id: "3", name: "Marco Rossi", email: "marco@company.com", role: "Chef de projet", avatar: "https://i.pravatar.cc/150?u=3" },
-    { id: "4", name: "Elena Schmidt", email: "elena@company.com", role: "Direction", avatar: "https://i.pravatar.cc/150?u=4" },
+    { id: "2", name: "Sarah Chen", email: "sarah@company.com", role: "MKT", avatar: "https://i.pravatar.cc/150?u=2" },
+    { id: "3", name: "Marco Rossi", email: "marco@company.com", role: "Sales", avatar: "https://i.pravatar.cc/150?u=3" },
+    { id: "4", name: "Elena Schmidt", email: "elena@company.com", role: "Supervisor", avatar: "https://i.pravatar.cc/150?u=4" },
+    { id: "5", name: "Ibrahima Fall", email: "ibrahima@company.com", role: "BO", avatar: "https://i.pravatar.cc/150?u=5" },
+];
+
+export const mockMotifs: Motif[] = [
+    { id: "m1", label: "Intérêt confirmé - À rappeler", defaultStatus: "Rappel", recallRequired: true, ticketRequired: false, markNC: false },
+    { id: "m2", label: "Demande de prix", defaultStatus: "Rappel", recallRequired: true, ticketRequired: false, markNC: false },
+    { id: "m3", label: "Rendez-vous fixé", defaultStatus: "Finale", recallRequired: false, ticketRequired: false, markNC: false },
+    { id: "m4", label: "Hors cible - Pas d'intérêt", defaultStatus: "Finale", recallRequired: false, ticketRequired: false, markNC: false },
+    { id: "m5", label: "Numéro erroné", defaultStatus: "Finale", recallRequired: false, ticketRequired: false, markNC: true },
+    { id: "m6", label: "Problème technique signalé", defaultStatus: "En attente", recallRequired: false, ticketRequired: true, markNC: false },
+    { id: "m7", label: "Demande de brochure", defaultStatus: "Rappel", recallRequired: true, ticketRequired: false, markNC: false },
+    { id: "m8", label: "Déjà client", defaultStatus: "Finale", recallRequired: false, ticketRequired: false, markNC: false },
+    { id: "m9", label: "Refus catégorique", defaultStatus: "Finale", recallRequired: false, ticketRequired: false, markNC: false },
+    { id: "m10", label: "Ne pas rappeler (Lister noire)", defaultStatus: "Finale", recallRequired: false, ticketRequired: false, markNC: true },
+    { id: "m11", label: "Occupé / Rappeler plus tard", defaultStatus: "Rappel", recallRequired: true, ticketRequired: false, markNC: false },
+    { id: "m12", label: "Absent / Laisser message", defaultStatus: "Rappel", recallRequired: true, ticketRequired: false, markNC: false },
+    { id: "m13", label: "En attente de documents", defaultStatus: "En attente", recallRequired: true, ticketRequired: false, markNC: false },
+    { id: "m14", label: "Litige commercial", defaultStatus: "En attente", recallRequired: false, ticketRequired: true, markNC: false },
+    { id: "m15", label: "Recommandation", defaultStatus: "Rappel", recallRequired: true, ticketRequired: false, markNC: false },
+    { id: "m16", label: "Visite terrain planifiée", defaultStatus: "Finale", recallRequired: false, ticketRequired: false, markNC: false },
+    { id: "m17", label: "Budget insuffisant", defaultStatus: "Finale", recallRequired: false, ticketRequired: false, markNC: false },
+    { id: "m18", label: "Projet à long terme", defaultStatus: "Rappel", recallRequired: true, ticketRequired: false, markNC: false },
+    { id: "m19", label: "Injoignable (NRP)", defaultStatus: "Rappel", recallRequired: true, ticketRequired: false, markNC: false },
+    { id: "m20", label: "Besoin d'expertise technique", defaultStatus: "En attente", recallRequired: false, ticketRequired: true, markNC: false },
+    { id: "m21", label: "Modification de contrat", defaultStatus: "En attente", recallRequired: false, ticketRequired: true, markNC: false },
+    { id: "m22", label: "Réclamation qualité", defaultStatus: "En attente", recallRequired: false, ticketRequired: true, markNC: true },
+    { id: "m23", label: "Transfert au service ventes", defaultStatus: "Finale", recallRequired: false, ticketRequired: false, markNC: false },
+    { id: "m24", label: "Erreur d'attribution", defaultStatus: "En attente", recallRequired: false, ticketRequired: false, markNC: false },
+    { id: "m25", label: "Suite à publicité", defaultStatus: "Rappel", recallRequired: true, ticketRequired: false, markNC: false },
+    { id: "m26", label: "Rencontre Salon", defaultStatus: "Rappel", recallRequired: true, ticketRequired: false, markNC: false },
+    { id: "m27", label: "Question juridique", defaultStatus: "En attente", recallRequired: false, ticketRequired: true, markNC: false },
+    { id: "m28", label: "Information générale", defaultStatus: "Finale", recallRequired: false, ticketRequired: false, markNC: false },
 ];
 
 export const mockClients: Client[] = [
@@ -20,19 +52,29 @@ export const mockClients: Client[] = [
         address: "123 Industrial Way, New York, NY",
         lastInteraction: "2024-02-05T10:00:00Z",
         projectsCount: 3,
+        isNC: false,
+        interactions: [
+            { id: "i1", date: "2024-02-05T10:00:00Z", channel: "Appel", motifId: "m1", comment: "Intérêt pour la nouvelle gamme.", agentName: "Sarah Chen" }
+        ]
     },
     {
         id: "c2",
         name: "Global Tech Solutions",
         type: "Prospect",
         industry: "Technologie",
-        status: "Active",
+        status: "En attente",
         contactPerson: "Jane Smith",
         email: "jane@globaltech.com",
         phone: "+1 555-0102",
         address: "456 Innovation Blvd, San Francisco, CA",
         lastInteraction: "2024-02-08T14:30:00Z",
         projectsCount: 0,
+        isNC: false,
+        assignedAgentId: "2",
+        assignedAgentName: "Sarah Chen",
+        interactions: [
+            { id: "i2", date: "2024-02-08T14:30:00Z", channel: "Email", motifId: "m2", comment: "Demande de cotation reçue.", agentName: "Sarah Chen" }
+        ]
     },
     {
         id: "c3",
@@ -46,6 +88,8 @@ export const mockClients: Client[] = [
         address: "789 Builder Lane, Chicago, IL",
         lastInteraction: "2024-02-07T09:15:00Z",
         projectsCount: 5,
+        isNC: true,
+        interactions: []
     },
 ];
 

@@ -3,6 +3,7 @@
 import React from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
+import { FloatingChatbot } from "@/components/layout/FloatingChatbot";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -61,6 +62,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                             </div>
                         </div>
                     </main>
+                    <FloatingChatbot />
                 </div>
             )}
         </div>

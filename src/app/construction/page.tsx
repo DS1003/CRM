@@ -14,7 +14,9 @@ import {
     MapPin,
     ArrowUpRight,
     Calendar,
-    Users
+    Users,
+    Trash2,
+    Pencil
 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
@@ -24,10 +26,14 @@ import { Badge } from "@/components/ui/Badge";
 import { useApp } from "@/context/AppContext";
 import { cn, formatCurrency } from "@/lib/utils";
 import { NewProjectModal } from "@/components/construction/NewProjectModal";
+import { EditProjectModal } from "@/components/construction/EditProjectModal";
+import { Project } from "@/types";
 
 export default function ConstructionPage() {
-    const { projects } = useApp();
+    const { projects, deleteProject } = useApp();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
     const activeCount = projects.filter(p => p.status === "In Progress" || p.status === "Planning").length;
     const completedCount = projects.filter(p => p.status === "Completed").length;
@@ -133,11 +139,36 @@ export default function ConstructionPage() {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <Badge variant={project.status === "Delayed" ? "warning" : "success"} className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 mr-8 border-none ring-1 ring-inset ring-black/5">
+                                            <Badge variant={project.status === "Delayed" ? "warning" : "success"} className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 mr-4 border-none ring-1 ring-inset ring-black/5">
                                                 {project.status === "In Progress" ? "En cours" :
                                                     project.status === "Delayed" ? "Retardé" :
                                                         project.status === "Completed" ? "Terminé" : project.status}
                                             </Badge>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-50 mr-2"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    setSelectedProject(project);
+                                                    setIsEditModalOpen(true);
+                                                }}
+                                            >
+                                                <Pencil size={14} />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-50 hover:text-rose-500 mr-8"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    if (confirm("Supprimer ce projet ?")) deleteProject(project.id);
+                                                }}
+                                            >
+                                                <Trash2 size={14} />
+                                            </Button>
                                         </div>
 
                                         <div className="mt-2 flex flex-col md:flex-row md:items-center gap-8">
@@ -179,6 +210,13 @@ export default function ConstructionPage() {
                 </CardContent>
             </Card>
             <NewProjectModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            {selectedProject && (
+                <EditProjectModal
+                    isOpen={isEditModalOpen}
+                    onClose={() => setIsEditModalOpen(false)}
+                    project={selectedProject}
+                />
+            )}
         </div>
     );
 }

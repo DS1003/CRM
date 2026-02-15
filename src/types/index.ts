@@ -1,4 +1,4 @@
-export type UserRole = "Admin" | "Ventes" | "Chef de projet" | "Direction" | "Légal" | "DAO" | "Sales" | "Construction" | "Project Manager" | "Legal" | "CAD" | "BO" | "Serv Tech";
+export type UserRole = "Admin" | "MKT" | "Sales" | "BO" | "Supervisor" | "Ventes" | "Chef de projet" | "Direction" | "Légal" | "DAO" | "Construction" | "Project Manager" | "Legal" | "CAD" | "Serv Tech";
 
 export interface User {
     id: string;
@@ -8,18 +8,46 @@ export interface User {
     avatar?: string;
 }
 
+export type ProspectStatus = "En attente" | "Rappel" | "Finale" | "Signé";
+export type InteractionChannel = "Appel" | "Email" | "Terrain";
+
+export interface Motif {
+    id: string;
+    label: string;
+    defaultStatus: ProspectStatus;
+    recallRequired: boolean;
+    ticketRequired: boolean;
+    markNC: boolean;
+}
+
+export interface Interaction {
+    id: string;
+    date: string;
+    channel: InteractionChannel;
+    motifId: string;
+    comment: string;
+    agentName: string;
+}
+
 export interface Client {
     id: string;
     name: string;
     type: "Prospect" | "Client";
     industry: string;
-    status: "Active" | "Inactive" | "Pending";
+    status: "Active" | "Inactive" | "Pending" | ProspectStatus;
     contactPerson: string;
     email: string;
     phone: string;
     address: string;
     lastInteraction: string;
     projectsCount: number;
+    // New Prospect Fields
+    assignedAgentId?: string;
+    assignedAgentName?: string;
+    nextRecall?: string;
+    isNC: boolean;
+    isAIQualified?: boolean;
+    interactions: Interaction[];
 }
 
 export interface Project {
@@ -110,4 +138,13 @@ export interface Ticket {
     satisfaction?: boolean;
     finalComment?: string;
     isArchived: boolean;
+}
+
+export interface Notification {
+    id: string;
+    title: string;
+    description: string;
+    time: string;
+    type: "lead" | "project" | "system" | "ticket";
+    read: boolean;
 }

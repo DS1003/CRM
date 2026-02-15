@@ -346,13 +346,13 @@ export default function TicketsPage() {
                     <CardContent className="p-0">
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead>
-                                    <tr className="text-left border-b border-slate-50 text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
-                                        <th className="py-5 px-8 font-bold">Identité Ticket</th>
-                                        <th className="py-5 px-4 font-bold">Classification</th>
-                                        <th className="py-5 px-4 font-bold">Échéance SLA</th>
-                                        <th className="py-5 px-4 font-bold">Statut</th>
-                                        <th className="py-5 px-8 text-right font-bold">Actions</th>
+                                <thead className="bg-slate-50/50">
+                                    <tr className="text-left border-b border-slate-100 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                        <th className="py-4 px-8">Identité Ticket</th>
+                                        <th className="py-4 px-4">Classification</th>
+                                        <th className="py-4 px-4">Échéance SLA</th>
+                                        <th className="py-4 px-4">Statut</th>
+                                        <th className="py-4 px-8 text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50/50">
@@ -561,7 +561,7 @@ export default function TicketsPage() {
                 onClose={() => setIsCreateModalOpen(false)}
                 title="Ouverture Nouveau Flux SAV"
                 description="Initialisation d'un ticket omnicanal pour le service support."
-                className="max-w-3xl rounded-[2.5rem] border-none shadow-2xl"
+                className="max-w-3xl rounded-[2rem] border-none shadow-2xl"
             >
                 <div className="py-8 space-y-8">
                     {/* Primary Info Section */}
@@ -703,7 +703,7 @@ export default function TicketsPage() {
                 onClose={() => setIsEditModalOpen(false)}
                 title="Modification du Flux SAV"
                 description="Mise à jour des informations structurelles du ticket."
-                className="max-w-3xl rounded-[2.5rem] border-none shadow-2xl"
+                className="max-w-3xl rounded-[2rem] border-none shadow-2xl"
             >
                 <div className="py-8 space-y-8">
                     {/* Primary Info Section */}

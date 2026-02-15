@@ -111,10 +111,10 @@ export default function LoginPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight"
+                    className="text-4xl lg:text-5xl font-semibold text-white tracking-tight leading-tight"
                   >
                     L'Excellence <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">Opérationnelle.</span>
+                    <span className="text-slate-300 font-light italic">Opérationnelle.</span>
                   </motion.h2>
                   <motion.p
                     initial={{ opacity: 0, y: 20 }}
@@ -240,9 +240,9 @@ export default function LoginPage() {
               </div>
 
               <div className="w-full max-w-sm space-y-10 relative z-10">
-                <div className="space-y-3">
-                  <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Bienvenue</h1>
-                  <p className="text-base text-slate-500 font-medium">Connectez-vous à votre espace NexCare.</p>
+                <div className="space-y-3 text-center lg:text-left">
+                  <h1 className="text-3xl font-bold text-slate-900 tracking-tight">NexCare CRM</h1>
+                  <p className="text-base text-slate-500 font-medium">Connectez-vous à votre espace de travail.</p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-6">
@@ -252,7 +252,7 @@ export default function LoginPage() {
                       <Input
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="h-14 bg-slate-50 border-slate-100 text-slate-900 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all font-medium text-base shadow-sm"
+                        className="h-14 bg-slate-50 border-slate-100 text-slate-900 rounded-xl focus:ring-2 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-medium text-base shadow-sm"
                         placeholder="nom@nexcare.io"
                       />
                     </div>
@@ -265,7 +265,7 @@ export default function LoginPage() {
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="h-14 bg-slate-50 border-slate-100 text-slate-900 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all font-medium text-base shadow-sm"
+                        className="h-14 bg-slate-50 border-slate-100 text-slate-900 rounded-xl focus:ring-2 focus:ring-primary/10 focus:border-primary focus:bg-white transition-all font-medium text-base shadow-sm"
                         placeholder="••••••••"
                       />
                     </div>
@@ -274,15 +274,15 @@ export default function LoginPage() {
                   <div className="space-y-3">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Poste</label>
                     <div className="grid grid-cols-4 gap-2">
-                      {["Admin", "Tech", "Ops", "Sales"].map((role) => (
+                      {["Admin", "MKT", "Sales", "BO", "Supervisor", "Construction", "CAD", "Legal"].map((role) => (
                         <button
                           key={role}
                           type="button"
                           onClick={() => setSelectedRole(role)}
                           className={cn(
-                            "h-10 rounded-xl text-xs font-bold transition-all border",
+                            "h-10 rounded-xl text-[10px] font-bold transition-all border",
                             selectedRole === role
-                              ? "bg-slate-900 text-white border-slate-900 shadow-md"
+                              ? "bg-slate-900 text-white border-slate-900 shadow-sm"
                               : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
                           )}
                         >
@@ -294,7 +294,7 @@ export default function LoginPage() {
 
                   <Button
                     type="submit"
-                    className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-xl shadow-slate-900/20 mt-8 flex items-center justify-center gap-3 text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl shadow-lg shadow-slate-900/10 mt-8 flex items-center justify-center gap-3 text-sm transition-all"
                   >
                     Se connecter
                     <ArrowRight size={18} />

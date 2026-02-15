@@ -190,7 +190,7 @@ textarea:focus {
   @apply bg-white/40 backdrop-blur-xl border border-white/20 shadow-2xl shadow-slate-200/50;
 }
 
-@keyframes shimmer {
+@keyframes shine {
   0% {
     transform: translateX(-100%);
   }
@@ -198,4 +198,8 @@ textarea:focus {
   100% {
     transform: translateX(100%);
   }
+}
+
+.animate-shine {
+  animation: shine 2s infinite linear;
 }
